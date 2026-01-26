@@ -35,5 +35,6 @@ if (isConfigValid) {
 }
 
 export { app, auth, db, storage };
-
-export { app, auth, db, storage };
+export const getSafeAuth = () => auth as Auth;
+export const getSafeDb = () => db as Firestore;
+export const getSafeStorage = () => storage as FirebaseStorage;
