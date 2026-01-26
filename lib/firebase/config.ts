@@ -14,22 +14,26 @@ const firebaseConfig = {
     appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase (singleton pattern)
-let app: FirebaseApp;
-let auth: Auth;
-let db: Firestore;
-let storage: FirebaseStorage;
+const isConfigValid = firebaseConfig.apiKey && firebaseConfig.projectId;
 
-if (!getApps().length) {
-    app = initializeApp(firebaseConfig);
-    auth = getAuth(app);
-    db = getFirestore(app);
-    storage = getStorage(app);
-} else {
-    app = getApps()[0];
+// Initialize Firebase (singleton pattern)
+let app: FirebaseApp | undefined;
+let auth: Auth | undefined;
+let db: Firestore | undefined;
+let storage: FirebaseStorage | undefined;
+
+if (isConfigValid) {
+    if (!getApps().length) {
+        app = initializeApp(firebaseConfig);
+    } else {
+        app = getApps()[0];
+    }
+
     auth = getAuth(app);
     db = getFirestore(app);
     storage = getStorage(app);
 }
+
+export { app, auth, db, storage };
 
 export { app, auth, db, storage };
