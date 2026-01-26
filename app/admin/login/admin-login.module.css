@@ -1,0 +1,71 @@
+.container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-md);
+    background: var(--bg-secondary);
+}
+
+.loginBox {
+    width: 100%;
+    max-width: 400px;
+    background: var(--white);
+    padding: var(--spacing-2xl);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    border-top: 4px solid var(--primary);
+}
+
+.header {
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+}
+
+.header h1 {
+    font-size: 1.75rem;
+    margin-bottom: var(--spacing-xs);
+    color: var(--text-primary);
+}
+
+.header p {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.errorBox {
+    background: #fee2e2;
+    border: 1px solid #ef4444;
+    color: #991b1b;
+    padding: var(--spacing-md);
+    border-radius: var(--radius);
+    font-size: 0.875rem;
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: center;
+}
+
+.backLink {
+    text-align: center;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin: 0;
+    margin-top: var(--spacing-sm);
+}
+
+.backLink a {
+    color: var(--primary);
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.backLink a:hover {
+    text-decoration: underline;
+}

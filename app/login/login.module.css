@@ -1,0 +1,194 @@
+.container {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-2xl) var(--spacing-md);
+    background: linear-gradient(135deg, #fce7f3 0%, #f3e8ff 100%);
+}
+
+.loginBox {
+    width: 100%;
+    max-width: 480px;
+    background: var(--white);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-2xl);
+    box-shadow: var(--shadow-xl);
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: var(--spacing-2xl);
+}
+
+.header h1 {
+    font-size: 2rem;
+    margin-bottom: var(--spacing-sm);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.header p {
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.errorBox {
+    background: #fee2e2;
+    border: 2px solid #ef4444;
+    color: #991b1b;
+    padding: var(--spacing-md);
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: 0.9375rem;
+    animation: shake 0.3s ease-in-out;
+}
+
+.errorIcon {
+    font-size: 1.25rem;
+}
+
+.forgotPassword {
+    text-align: right;
+    margin-top: calc(var(--spacing-sm) * -1);
+}
+
+.forgotPassword a {
+    color: var(--primary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color var(--transition-base);
+}
+
+.forgotPassword a:hover {
+    color: var(--primary-dark);
+    text-decoration: underline;
+}
+
+.divider {
+    position: relative;
+    text-align: center;
+    margin: var(--spacing-md) 0;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 45%;
+    height: 1px;
+    background: var(--border-color);
+}
+
+.divider::before {
+    left: 0;
+}
+
+.divider::after {
+    right: 0;
+}
+
+.divider span {
+    background: var(--white);
+    padding: 0 var(--spacing-md);
+    color: var(--text-tertiary);
+    font-size: 0.875rem;
+}
+
+.signup {
+    text-align: center;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.signupLink {
+    color: var(--primary);
+    font-weight: 600;
+    text-decoration: none;
+    transition: color var(--transition-base);
+}
+
+.signupLink:hover {
+    color: var(--primary-dark);
+    text-decoration: underline;
+}
+
+.demo {
+    margin-top: var(--spacing-2xl);
+    padding-top: var(--spacing-2xl);
+    border-top: 2px solid var(--border-color);
+}
+
+.demo h4 {
+    font-size: 1rem;
+    margin-bottom: var(--spacing-md);
+    color: var(--text-primary);
+    text-align: center;
+}
+
+.demoBox {
+    background: var(--bg-secondary);
+    padding: var(--spacing-md);
+    border-radius: var(--radius);
+    margin-bottom: var(--spacing-md);
+}
+
+.demoBox p {
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-sm);
+    font-size: 0.875rem;
+    font-family: monospace;
+}
+
+.demoBox p:last-child {
+    margin-bottom: 0;
+}
+
+.note {
+    text-align: center;
+    color: var(--warning);
+    font-size: 0.875rem;
+    margin: 0;
+    font-weight: 500;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-10px);
+    }
+
+    75% {
+        transform: translateX(10px);
+    }
+}
