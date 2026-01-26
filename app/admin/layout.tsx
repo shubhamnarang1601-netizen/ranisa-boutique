@@ -18,29 +18,25 @@ export default function AdminLayout({
     const [user, setUser] = useState<{ name?: string; email?: string } | null>(null);
 
     useEffect(() => {
-        // Skip auth check logic if on login page
-        if (pathname === '/admin/login') {
-            setLoading(false);
-            return;
+        if (typeof window !== "undefined") {
+            const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+                if (!firebaseUser) {
+                    router.push('/admin/login');
+                    return;
+                }
+
+                const userData = await getCurrentUser();
+                if (!userData || userData.role !== 'admin') {
+                    router.push('/login');
+                    return;
+                }
+
+                setUser(userData);
+                setLoading(false);
+            });
+
+            return () => unsubscribe();
         }
-
-        const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-            if (!firebaseUser) {
-                router.push('/admin/login');
-                return;
-            }
-
-            const userData = await getCurrentUser();
-            if (!userData || userData.role !== 'admin') {
-                router.push('/login');
-                return;
-            }
-
-            setUser(userData);
-            setLoading(false);
-        });
-
-        return () => unsubscribe();
     }, [router, pathname]);
 
     // If we are on the login page, don't show the admin layout/sidebar
