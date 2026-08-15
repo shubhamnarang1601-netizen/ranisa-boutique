@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, Star } from 'lucide-react';
 import HeroCarousel from '../components/HeroCarousel';
 import ProductCard from '../components/ProductCard';
+import { fetchProducts } from '../lib/api';
 import {
   QUOTE,
   COLLECTION_TILES,
@@ -10,7 +11,6 @@ import {
   INSTAGRAM_IMAGES,
   REVIEWS,
   FEATURES,
-  PRODUCTS,
 } from '../data/mock';
 
 const QuoteStrip = () => (
@@ -144,16 +144,34 @@ const FeaturesStrip = () => (
 );
 
 const Home = () => {
-  const latest = PRODUCTS.filter((p) => p.collections.includes('new-in')).slice(0, 4);
-  const luxurio = PRODUCTS.filter((p) => p.collections.includes('luxurio')).slice(0, 4);
+  const [latest, setLatest] = useState([]);
+  const [luxurio, setLuxurio] = useState([]);
+
+  useEffect(() => {
+    let active = true;
+    Promise.all([fetchProducts('new-in'), fetchProducts('luxurio')])
+      .then(([n, l]) => {
+        if (!active) return;
+        setLatest(n.slice(0, 4));
+        setLuxurio(l.slice(0, 4));
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <div className="fade-up">
       <HeroCarousel />
       <QuoteStrip />
       <CollectionsBrowse />
-      <ProductRow title="Latest Collection by Roshni" sub="Just Arrived" handle="new-in" products={latest} />
-      <ProductRow title="Luxurio - by Roshni" sub="Premium Edit" handle="luxurio" products={luxurio} />
+      {latest.length > 0 && (
+        <ProductRow title="Latest Collection by Roshni" sub="Just Arrived" handle="new-in" products={latest} />
+      )}
+      {luxurio.length > 0 && (
+        <ProductRow title="Luxurio - by Roshni" sub="Premium Edit" handle="luxurio" products={luxurio} />
+      )}
       {CATEGORY_BANNERS.map((block) => (
         <CategoryBanner key={block.handle} block={block} />
       ))}

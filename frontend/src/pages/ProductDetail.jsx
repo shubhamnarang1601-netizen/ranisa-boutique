@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Minus, Plus, Heart, Share2, Truck, ShieldCheck, RefreshCw, ChevronRight } from 'lucide-react';
+import { Minus, Plus, Heart, Share2, Truck, ShieldCheck, RefreshCw } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
-import { PRODUCTS } from '../data/mock';
+import { fetchProduct, fetchProducts } from '../lib/api';
 import { useCart } from '../context/CartContext';
 import { Button } from '../components/ui/button';
 import {
@@ -24,7 +24,9 @@ const ProductDetail = () => {
   const { slug } = useParams();
   const { addItem } = useCart();
 
-  const product = useMemo(() => PRODUCTS.find((p) => p.slug === slug), [slug]);
+  const [product, setProduct] = useState(null);
+  const [related, setRelated] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const [activeImg, setActiveImg] = useState(0);
   const [color, setColor] = useState(null);
@@ -33,13 +35,39 @@ const ProductDetail = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    if (product) {
-      setActiveImg(0);
-      setColor(product.colors?.[0] || null);
-      setSize(product.sizes?.[0] || null);
-      setQty(1);
-    }
-  }, [slug, product]);
+    setLoading(true);
+    fetchProduct(slug)
+      .then((p) => {
+        setProduct(p);
+        setActiveImg(0);
+        setColor(p.colors?.[0] || null);
+        setSize(p.sizes?.[0] || null);
+        setQty(1);
+        if (p.collections?.[0]) {
+          fetchProducts(p.collections[0]).then((list) =>
+            setRelated(list.filter((x) => x.id !== p.id).slice(0, 4))
+          );
+        }
+      })
+      .catch(() => setProduct(null))
+      .finally(() => setLoading(false));
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="max-w-[1400px] mx-auto px-4 lg:px-8 py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 animate-pulse">
+          <div className="aspect-[3/4] bg-secondary" />
+          <div className="space-y-4">
+            <div className="h-8 bg-secondary w-3/4" />
+            <div className="h-6 bg-secondary w-1/3" />
+            <div className="h-12 bg-secondary w-full" />
+            <div className="h-12 bg-secondary w-full" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -49,10 +77,6 @@ const ProductDetail = () => {
       </div>
     );
   }
-
-  const related = PRODUCTS.filter(
-    (p) => p.id !== product.id && p.collections.some((c) => product.collections.includes(c))
-  ).slice(0, 4);
 
   const discount = product.compareAt ? Math.round(((product.compareAt - product.price) / product.compareAt) * 100) : 0;
 
