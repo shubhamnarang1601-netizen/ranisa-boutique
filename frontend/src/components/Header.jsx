@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, User, ShoppingBag, Menu, X, Heart } from 'lucide-react';
+import { Search, ShoppingBag, Menu, Heart } from 'lucide-react';
 import { NAV_COLLECTIONS } from '../data/mock';
 import { useCart } from '../context/CartContext';
 import {
@@ -63,7 +63,6 @@ const Header = () => {
                           {c.title}
                         </Link>
                       ))}
-                      <Link to="/admin" className="py-3 text-sm uppercase tracking-widest text-muted-foreground hover:text-primary">Admin</Link>
                     </nav>
                   </div>
                 </SheetContent>
@@ -97,9 +96,6 @@ const Header = () => {
               <button aria-label="Search" className="hover:text-primary transition-colors" onClick={() => navigate('/collections/casual-wear')}>
                 <Search className="w-5 h-5" />
               </button>
-              <Link to="/admin" aria-label="Account" className="hidden sm:block hover:text-primary transition-colors">
-                <User className="w-5 h-5" />
-              </Link>
               <button aria-label="Wishlist" className="hidden sm:block hover:text-primary transition-colors">
                 <Heart className="w-5 h-5" />
               </button>

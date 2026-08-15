@@ -4,13 +4,7 @@ import { ChevronRight, Star } from 'lucide-react';
 import HeroCarousel from '../components/HeroCarousel';
 import ProductCard from '../components/ProductCard';
 import { fetchProducts } from '../lib/api';
-import {
-  QUOTE,
-  COLLECTION_TILES,
-  INSTAGRAM_IMAGES,
-  REVIEWS,
-  FEATURES,
-} from '../data/mock';
+import { QUOTE, REVIEWS, FEATURES } from '../data/mock';
 
 const QuoteStrip = () => (
   <div className="bg-primary text-primary-foreground py-3 overflow-hidden whitespace-nowrap">
@@ -34,58 +28,61 @@ const SectionTitle = ({ children, sub }) => (
   </div>
 );
 
-const CollectionsBrowse = () => (
-  <section className="max-w-[1400px] mx-auto px-4 lg:px-8 py-16">
-    <SectionTitle sub="Explore">Collections by Ranisa</SectionTitle>
-    <p className="text-center text-muted-foreground italic max-w-2xl mx-auto mb-12 font-serif-display text-xl">
-      Step into elegance, embrace tradition. Our ethnic wear is not just fashion; it's a celebration of
-      womanhood, where style meets culture effortlessly.
-    </p>
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 lg:gap-6">
-      {COLLECTION_TILES.map((tile) => (
-        <Link key={tile.handle} to={`/collections/${tile.handle}`} className="group">
-          <div className="img-zoom-wrap aspect-[3/4] bg-secondary rounded-sm overflow-hidden relative">
-            <img src={tile.image} alt={tile.title} className="w-full h-full object-cover" loading="lazy" />
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+const ShopSection = () => {
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    fetchProducts()
+      .then((list) => active && setItems(list))
+      .catch(() => {})
+      .finally(() => active && setLoading(false));
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  return (
+    <section className="max-w-[1400px] mx-auto px-4 lg:px-8 py-16">
+      <SectionTitle sub="Shop">Shop Our Collection</SectionTitle>
+
+      {loading ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-10 lg:gap-x-6">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="animate-pulse">
+              <div className="aspect-[3/4] bg-secondary" />
+              <div className="h-4 bg-secondary mt-3 w-3/4 mx-auto" />
+              <div className="h-4 bg-secondary mt-2 w-1/3 mx-auto" />
+            </div>
+          ))}
+        </div>
+      ) : items.length === 0 ? (
+        <div className="text-center py-16">
+          <p className="text-muted-foreground text-lg font-serif-display italic">
+            New arrivals are on their way — check back very soon.
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-10 lg:gap-x-6">
+            {items.slice(0, 12).map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
           </div>
-        </Link>
-      ))}
-    </div>
-  </section>
-);
-
-const ProductRow = ({ title, sub, handle, products }) => (
-  <section className="max-w-[1400px] mx-auto px-4 lg:px-8 py-16">
-    <SectionTitle sub={sub}>{title}</SectionTitle>
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-10 lg:gap-x-6">
-      {products.map((p) => (
-        <ProductCard key={p.id} product={p} />
-      ))}
-    </div>
-    <div className="text-center mt-12">
-      <Link
-        to={`/collections/${handle}`}
-        className="inline-flex items-center gap-2 border border-foreground/80 px-8 py-3 text-xs uppercase tracking-[0.25em] hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors"
-      >
-        View More <ChevronRight className="w-4 h-4" />
-      </Link>
-    </div>
-  </section>
-);
-
-const InstagramGallery = () => (
-  <section className="max-w-[1400px] mx-auto px-4 lg:px-8 py-16">
-    <SectionTitle sub="@ranisaboutique">#CelebrateInRanisa</SectionTitle>
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 lg:gap-3">
-      {INSTAGRAM_IMAGES.map((src, i) => (
-        <a key={i} href="#" className="group relative img-zoom-wrap aspect-square bg-secondary overflow-hidden rounded-sm">
-          <img src={src} alt={`Ranisa look ${i + 1}`} className="w-full h-full object-cover" loading="lazy" />
-          <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/20 transition-colors" />
-        </a>
-      ))}
-    </div>
-  </section>
-);
+          <div className="text-center mt-12">
+            <Link
+              to="/collections/casual-wear"
+              className="inline-flex items-center gap-2 border border-foreground/80 px-8 py-3 text-xs uppercase tracking-[0.25em] hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors"
+            >
+              View All <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </>
+      )}
+    </section>
+  );
+};
 
 const initials = (name) => name.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase();
 
@@ -129,35 +126,11 @@ const FeaturesStrip = () => (
 );
 
 const Home = () => {
-  const [latest, setLatest] = useState([]);
-  const [luxurio, setLuxurio] = useState([]);
-
-  useEffect(() => {
-    let active = true;
-    Promise.all([fetchProducts('casual-wear'), fetchProducts('party-wear')])
-      .then(([n, l]) => {
-        if (!active) return;
-        setLatest(n.slice(0, 4));
-        setLuxurio(l.slice(0, 4));
-      })
-      .catch(() => {});
-    return () => {
-      active = false;
-    };
-  }, []);
-
   return (
     <div className="fade-up">
       <HeroCarousel />
       <QuoteStrip />
-      <CollectionsBrowse />
-      {latest.length > 0 && (
-        <ProductRow title="Casual Wear" sub="Everyday Elegance" handle="casual-wear" products={latest} />
-      )}
-      {luxurio.length > 0 && (
-        <ProductRow title="Party Wear" sub="Celebrate in Style" handle="party-wear" products={luxurio} />
-      )}
-      <InstagramGallery />
+      <ShopSection />
       <Reviews />
       <FeaturesStrip />
     </div>
