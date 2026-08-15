@@ -99,7 +99,7 @@ const ProductDetail = () => {
             <div className="flex lg:flex-col gap-3">
               {product.images.map((img, i) => (
                 <button
-                  key={i}
+                  key={img}
                   onClick={() => setActiveImg(i)}
                   className={`w-20 h-24 bg-secondary overflow-hidden border-2 transition-colors ${activeImg === i ? 'border-primary' : 'border-transparent hover:border-border'}`}
                 >
@@ -193,8 +193,8 @@ const ProductDetail = () => {
 
             {/* Trust badges */}
             <div className="grid grid-cols-3 gap-3 mb-8">
-              {[{ icon: Truck, t: 'PAN India Delivery' }, { icon: RefreshCw, t: 'Easy Exchange' }, { icon: ShieldCheck, t: 'Secure Payments' }].map((b, i) => (
-                <div key={i} className="flex flex-col items-center text-center gap-2 p-3 bg-secondary/50 rounded-sm">
+              {[{ icon: Truck, t: 'PAN India Delivery' }, { icon: RefreshCw, t: 'Easy Exchange' }, { icon: ShieldCheck, t: 'Secure Payments' }].map((b) => (
+                <div key={b.t} className="flex flex-col items-center text-center gap-2 p-3 bg-secondary/50 rounded-sm">
                   <b.icon className="w-5 h-5 text-primary" />
                   <span className="text-xs text-muted-foreground">{b.t}</span>
                 </div>

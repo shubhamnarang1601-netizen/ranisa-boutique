@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, ShoppingBag, Menu, Heart } from 'lucide-react';
-import { NAV_COLLECTIONS } from '../data/mock';
+import { NAV_COLLECTIONS, LOGO_URL } from '../data/mock';
 import { useCart } from '../context/CartContext';
 import {
   Sheet,
@@ -52,7 +52,7 @@ const Header = () => {
                 </SheetTrigger>
                 <SheetContent side="left" className="w-80 p-0">
                   <div className="px-6 py-6">
-                    <p className="font-serif-display text-2xl mb-6">Ranisa Collection</p>
+                    <img src={LOGO_URL} alt="Rani Sa Boutique" className="h-14 w-auto object-contain mb-6" />
                     <nav className="flex flex-col">
                       {mainNav.map((c) => (
                         <Link
@@ -71,10 +71,7 @@ const Header = () => {
 
             {/* Logo */}
             <Link to="/" className="lg:flex-1 flex justify-center lg:justify-start">
-              <div className="text-center lg:text-left">
-                <span className="font-serif-display text-3xl lg:text-4xl font-semibold tracking-wide text-primary">Ranisa</span>
-                <span className="block text-[0.6rem] tracking-[0.45em] uppercase text-muted-foreground -mt-1">Boutique</span>
-              </div>
+              <img src={LOGO_URL} alt="Rani Sa Boutique" className="h-14 lg:h-16 w-auto object-contain" />
             </Link>
 
             {/* Desktop nav */}

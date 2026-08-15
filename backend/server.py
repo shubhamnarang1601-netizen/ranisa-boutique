@@ -74,9 +74,12 @@ async def require_admin(authorization: Optional[str] = Header(None)):
     if not authorization or not authorization.startswith('Bearer '):
         raise HTTPException(status_code=401, detail='Missing token')
     token = authorization.split(' ', 1)[1]
+    payload = None
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGO])
     except jwt.PyJWTError:
+        payload = None
+    if not payload:
         raise HTTPException(status_code=401, detail='Invalid or expired token')
     if payload.get('role') != 'admin':
         raise HTTPException(status_code=403, detail='Forbidden')

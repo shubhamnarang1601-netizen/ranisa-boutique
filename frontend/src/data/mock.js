@@ -5,6 +5,8 @@
 const P = '&w=900&q=80';
 const H = '&w=1920&q=80';
 
+export const LOGO_URL = 'https://customer-assets-jai6qajn.emergentagent.net/job_boutique-shop-admin/artifacts/9ctppelu_WhatsApp%20Image%202026-08-15%20at%202.30.11%20PM.jpeg';
+
 export const NAV_COLLECTIONS = [
   { title: 'Casual Wear', handle: 'casual-wear' },
   { title: 'Party Wear', handle: 'party-wear' },

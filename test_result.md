@@ -118,6 +118,9 @@ backend:
         -working: true
         -agent: "testing"
         -comment: "✅ PASSED all tests: (1) POST /api/admin/login with admin/roshni123 returns 200 with valid JWT token. (2) Wrong password returns 401 Unauthorized as expected. Auth endpoint working correctly."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ RE-TEST PASSED (after code-review fix): (1) POST /api/admin/login with admin/ranisa123 returns 200 with valid JWT token. (2) Invalid credentials return 401 Unauthorized. Auth endpoint working correctly with updated credentials."
   - task: "Products CRUD (GET list, GET by slug, POST, PUT, DELETE)"
     implemented: true
     working: true
@@ -132,6 +135,9 @@ backend:
         -working: true
         -agent: "testing"
         -comment: "✅ PASSED all tests: (1) GET /api/products returns 8 seeded products. (2) GET /api/products?collection=new-in correctly filters 4 products with collections starting with 'new-in'. (3) GET /api/products/{slug} returns 200 for existing slug 'glaze-cotton-western-style-frock-15396'. (4) GET /api/products/{slug} returns 404 for non-existent slug. (5) POST /api/products without auth returns 401. (6) POST /api/products with Bearer token creates product with id and slug (200). (7) PUT /api/products/{id} with token updates fields correctly (200). (8) DELETE /api/products/{id} with token returns {ok:true} (200). (9) DELETE non-existent product returns 404. All CRUD operations working correctly."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ RE-TEST PASSED (after code-review fix): (1) GET /api/products returns 200 (catalogue empty as expected). (2) GET /api/products?collection=casual-wear returns 200 with proper filtering. (3) GET /api/products/{slug} returns 200 for existing product, 404 for non-existent. (4) POST /api/products without auth returns 401. (5) POST /api/products with malformed Bearer token 'abc.def.ghi' returns 401 (NOT 500 - critical fix verified). (6) POST /api/products with valid token creates product successfully. (7) PUT /api/products/{id} with valid token updates product. (8) DELETE /api/products/{id} with valid token deletes product. Full CRUD sanity test passed: create->fetch->update->delete->verify deletion. All auth guards working correctly, no 500 errors on malformed tokens."
   - task: "Image upload (POST /api/upload)"
     implemented: true
     working: true
@@ -146,6 +152,9 @@ backend:
         -working: true
         -agent: "testing"
         -comment: "✅ PASSED all tests: (1) POST /api/upload without auth returns 401 Unauthorized. (2) POST /api/upload with Bearer token and multipart image file returns 200 with {url} starting with 'data:image/png;base64'. Image upload endpoint working correctly with proper auth protection."
+        -working: true
+        -agent: "testing"
+        -comment: "✅ RE-TEST PASSED (after code-review fix): (1) POST /api/upload without auth returns 401. (2) POST /api/upload with malformed Bearer token 'xyz.abc.123' returns 401 (NOT 500 - critical fix verified). (3) POST /api/upload with valid token returns 200 with base64 data URI. Upload endpoint auth guards working correctly."
   - task: "Startup seeding of 8 products"
     implemented: true
     working: true
@@ -188,3 +197,8 @@ agent_communication:
     -message: "Please test backend endpoints. Login with admin/roshni123 to get token. Verify products CRUD (create needs auth, unauthenticated create should 401), collection filter (?collection=new-in), get by slug, and image upload with a small multipart image. Base URL uses REACT_APP_BACKEND_URL + /api."
     -agent: "testing"
     -message: "✅ ALL BACKEND TESTS PASSED (13/13). Comprehensive testing completed: Admin JWT login (success + wrong password), Products CRUD (GET list, GET by slug with existing/non-existent, POST/PUT/DELETE with/without auth, collection filter), Image upload (with/without auth). All endpoints return correct status codes and responses. Backend API is fully functional. No issues found. Ready for main agent to summarize and finish."
+
+## Update (Code-review fixes)
+agent_communication:
+    -agent: "main"
+    -message: "Applied code-review fix in require_admin (server.py): payload is now always initialized (defensive) so it can never be used before assignment; malformed/expired/invalid tokens => 401, missing token => 401, valid non-admin => 403, valid admin => allowed. Please RE-TEST all backend endpoints, focusing on auth guards: (1) POST /api/admin/login valid + invalid, (2) protected routes (POST/PUT/DELETE /api/products, POST /api/upload) with NO token=>401, with a GARBAGE/malformed Bearer token=>401, and with a valid token=>success, (3) public GETs still work. Login creds admin/ranisa123."

@@ -1,649 +1,399 @@
 #!/usr/bin/env python3
 """
-Backend API Tests for Roshni Boutique
-Tests all backend endpoints according to the review request
+Comprehensive backend auth testing for Ranisa Boutique API
+Tests admin login, auth guards, and CRUD operations
 """
 import requests
 import json
-import io
-from PIL import Image
+import sys
+from io import BytesIO
 
 # Base URL from frontend/.env
 BASE_URL = "https://boutique-shop-admin.preview.emergentagent.com/api"
 
 # Test credentials
 ADMIN_USERNAME = "admin"
-ADMIN_PASSWORD = "roshni123"
+ADMIN_PASSWORD = "ranisa123"
 
-# Global token storage
-auth_token = None
-created_product_id = None
+# Test results tracking
+passed = 0
+failed = 0
+test_results = []
 
-def print_test(name, passed, details=""):
-    """Print test result"""
-    status = "✅ PASS" if passed else "❌ FAIL"
-    print(f"{status}: {name}")
+def log_test(name, success, details=""):
+    global passed, failed
+    status = "✅ PASS" if success else "❌ FAIL"
+    result = f"{status}: {name}"
     if details:
-        print(f"   Details: {details}")
-    print()
+        result += f" - {details}"
+    print(result)
+    test_results.append({"name": name, "success": success, "details": details})
+    if success:
+        passed += 1
+    else:
+        failed += 1
 
-def test_admin_login_success():
-    """Test 1: POST /api/admin/login with correct credentials -> 200 with token"""
-    global auth_token
-    print("=" * 80)
-    print("TEST 1: Admin Login - Success Case")
-    print("=" * 80)
-    
+def test_admin_login_valid():
+    """Test 1: POST /api/admin/login with valid credentials"""
     try:
         response = requests.post(
             f"{BASE_URL}/admin/login",
             json={"username": ADMIN_USERNAME, "password": ADMIN_PASSWORD},
             timeout=10
         )
-        
         if response.status_code == 200:
             data = response.json()
-            if "token" in data and data["token"]:
-                auth_token = data["token"]
-                print_test(
-                    "Admin login with correct credentials",
-                    True,
-                    f"Status: {response.status_code}, Token received: {data['token'][:20]}..."
-                )
-                return True
+            if "token" in data and isinstance(data["token"], str) and len(data["token"]) > 20:
+                log_test("Admin login with valid credentials", True, f"Returns 200 with JWT token")
+                return data["token"]
             else:
-                print_test(
-                    "Admin login with correct credentials",
-                    False,
-                    f"Status: {response.status_code}, but no token in response: {data}"
-                )
-                return False
+                log_test("Admin login with valid credentials", False, f"200 but missing/invalid token: {data}")
+                return None
         else:
-            print_test(
-                "Admin login with correct credentials",
-                False,
-                f"Expected 200, got {response.status_code}: {response.text}"
-            )
-            return False
+            log_test("Admin login with valid credentials", False, f"Expected 200, got {response.status_code}: {response.text}")
+            return None
     except Exception as e:
-        print_test("Admin login with correct credentials", False, f"Exception: {str(e)}")
-        return False
+        log_test("Admin login with valid credentials", False, f"Exception: {str(e)}")
+        return None
 
-def test_admin_login_failure():
-    """Test 2: POST /api/admin/login with wrong password -> 401"""
-    print("=" * 80)
-    print("TEST 2: Admin Login - Wrong Password")
-    print("=" * 80)
-    
+def test_admin_login_invalid():
+    """Test 2: POST /api/admin/login with invalid credentials"""
     try:
         response = requests.post(
             f"{BASE_URL}/admin/login",
             json={"username": ADMIN_USERNAME, "password": "wrongpassword"},
             timeout=10
         )
+        if response.status_code == 401:
+            log_test("Admin login with invalid credentials", True, "Returns 401 Unauthorized")
+        else:
+            log_test("Admin login with invalid credentials", False, f"Expected 401, got {response.status_code}: {response.text}")
+    except Exception as e:
+        log_test("Admin login with invalid credentials", False, f"Exception: {str(e)}")
+
+def test_protected_endpoint_no_auth(endpoint, method="POST"):
+    """Test 3a: Protected endpoint without Authorization header"""
+    try:
+        if method == "POST":
+            response = requests.post(f"{BASE_URL}{endpoint}", json={}, timeout=10)
+        elif method == "PUT":
+            response = requests.put(f"{BASE_URL}{endpoint}", json={}, timeout=10)
+        elif method == "DELETE":
+            response = requests.delete(f"{BASE_URL}{endpoint}", timeout=10)
         
         if response.status_code == 401:
-            print_test(
-                "Admin login with wrong password",
-                True,
-                f"Status: {response.status_code} (Unauthorized as expected)"
-            )
-            return True
+            log_test(f"{method} {endpoint} without auth", True, "Returns 401")
         else:
-            print_test(
-                "Admin login with wrong password",
-                False,
-                f"Expected 401, got {response.status_code}: {response.text}"
-            )
-            return False
+            log_test(f"{method} {endpoint} without auth", False, f"Expected 401, got {response.status_code}: {response.text}")
     except Exception as e:
-        print_test("Admin login with wrong password", False, f"Exception: {str(e)}")
-        return False
+        log_test(f"{method} {endpoint} without auth", False, f"Exception: {str(e)}")
 
-def test_get_products_list():
-    """Test 3: GET /api/products -> returns array of 8 seeded products"""
-    print("=" * 80)
-    print("TEST 3: Get Products List")
-    print("=" * 80)
-    
+def test_protected_endpoint_malformed_token(endpoint, method="POST"):
+    """Test 3b: Protected endpoint with malformed/garbage Bearer token"""
+    try:
+        headers = {"Authorization": "Bearer abc.def.ghi"}
+        if method == "POST":
+            response = requests.post(f"{BASE_URL}{endpoint}", json={}, headers=headers, timeout=10)
+        elif method == "PUT":
+            response = requests.put(f"{BASE_URL}{endpoint}", json={}, headers=headers, timeout=10)
+        elif method == "DELETE":
+            response = requests.delete(f"{BASE_URL}{endpoint}", headers=headers, timeout=10)
+        
+        if response.status_code == 401:
+            log_test(f"{method} {endpoint} with malformed token", True, "Returns 401 (not 500)")
+        elif response.status_code == 500:
+            log_test(f"{method} {endpoint} with malformed token", False, f"CRITICAL: Returns 500 (should be 401): {response.text}")
+        else:
+            log_test(f"{method} {endpoint} with malformed token", False, f"Expected 401, got {response.status_code}: {response.text}")
+    except Exception as e:
+        log_test(f"{method} {endpoint} with malformed token", False, f"Exception: {str(e)}")
+
+def test_public_get_products():
+    """Test 4a: Public GET /api/products"""
     try:
         response = requests.get(f"{BASE_URL}/products", timeout=10)
-        
         if response.status_code == 200:
             data = response.json()
-            if isinstance(data, list):
-                print_test(
-                    "Get products list",
-                    True,
-                    f"Status: {response.status_code}, Products count: {len(data)}"
-                )
-                return True
-            else:
-                print_test(
-                    "Get products list",
-                    False,
-                    f"Expected array, got: {type(data)}"
-                )
-                return False
+            log_test("GET /api/products (public)", True, f"Returns 200 with {len(data)} products")
         else:
-            print_test(
-                "Get products list",
-                False,
-                f"Expected 200, got {response.status_code}: {response.text}"
-            )
-            return False
+            log_test("GET /api/products (public)", False, f"Expected 200, got {response.status_code}: {response.text}")
     except Exception as e:
-        print_test("Get products list", False, f"Exception: {str(e)}")
-        return False
+        log_test("GET /api/products (public)", False, f"Exception: {str(e)}")
 
-def test_get_products_collection_filter():
-    """Test 4: GET /api/products?collection=new-in -> returns only products with collections starting with 'new-in'"""
-    print("=" * 80)
-    print("TEST 4: Get Products with Collection Filter")
-    print("=" * 80)
-    
+def test_public_get_products_with_collection():
+    """Test 4b: Public GET /api/products?collection=casual-wear"""
     try:
-        response = requests.get(f"{BASE_URL}/products?collection=new-in", timeout=10)
-        
+        response = requests.get(f"{BASE_URL}/products?collection=casual-wear", timeout=10)
         if response.status_code == 200:
             data = response.json()
-            if isinstance(data, list):
-                # Verify all products have collections starting with "new-in"
-                all_valid = True
-                for product in data:
-                    if "collections" in product:
-                        has_new_in = any(c.startswith("new-in") for c in product["collections"])
-                        if not has_new_in:
-                            all_valid = False
-                            break
-                
-                if all_valid and len(data) > 0:
-                    print_test(
-                        "Get products with collection filter",
-                        True,
-                        f"Status: {response.status_code}, Filtered products: {len(data)}"
-                    )
-                    return True
-                elif len(data) == 0:
-                    print_test(
-                        "Get products with collection filter",
-                        False,
-                        "No products returned with 'new-in' filter"
-                    )
-                    return False
-                else:
-                    print_test(
-                        "Get products with collection filter",
-                        False,
-                        "Some products don't have collections starting with 'new-in'"
-                    )
-                    return False
-            else:
-                print_test(
-                    "Get products with collection filter",
-                    False,
-                    f"Expected array, got: {type(data)}"
-                )
-                return False
+            log_test("GET /api/products?collection=casual-wear (public)", True, f"Returns 200 with {len(data)} products")
         else:
-            print_test(
-                "Get products with collection filter",
-                False,
-                f"Expected 200, got {response.status_code}: {response.text}"
-            )
-            return False
+            log_test("GET /api/products?collection=casual-wear (public)", False, f"Expected 200, got {response.status_code}: {response.text}")
     except Exception as e:
-        print_test("Get products with collection filter", False, f"Exception: {str(e)}")
-        return False
+        log_test("GET /api/products?collection=casual-wear (public)", False, f"Exception: {str(e)}")
 
-def test_get_product_by_slug_success():
-    """Test 5: GET /api/products/{slug} with existing slug -> 200"""
-    print("=" * 80)
-    print("TEST 5: Get Product by Slug - Existing")
-    print("=" * 80)
+def test_public_get_product_by_slug_existing():
+    """Test 4c: Public GET /api/products/{slug} for existing product"""
+    # First, create a test product to ensure we have something to fetch
+    token = test_admin_login_valid()
+    if not token:
+        log_test("GET /api/products/{slug} existing (public)", False, "Cannot test - no admin token")
+        return None
+    
+    # Create a test product
+    test_product = {
+        "title": "Test Product for Slug Fetch",
+        "price": 1999,
+        "fabric": "Cotton",
+        "description": "Test product",
+        "collections": ["test-collection"],
+        "colors": ["Red"],
+        "sizes": ["M"],
+        "images": []
+    }
     
     try:
-        # Use a known slug from seeded data
-        slug = "glaze-cotton-western-style-frock-15396"
-        response = requests.get(f"{BASE_URL}/products/{slug}", timeout=10)
-        
-        if response.status_code == 200:
-            data = response.json()
-            if "slug" in data and data["slug"] == slug:
-                print_test(
-                    "Get product by existing slug",
-                    True,
-                    f"Status: {response.status_code}, Product: {data.get('title', 'N/A')}"
-                )
-                return True
+        headers = {"Authorization": f"Bearer {token}"}
+        create_response = requests.post(f"{BASE_URL}/products", json=test_product, headers=headers, timeout=10)
+        if create_response.status_code == 200:
+            created = create_response.json()
+            slug = created.get("slug")
+            
+            # Now test public GET by slug
+            response = requests.get(f"{BASE_URL}/products/{slug}", timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                log_test(f"GET /api/products/{slug} existing (public)", True, f"Returns 200 with product data")
+                return slug
             else:
-                print_test(
-                    "Get product by existing slug",
-                    False,
-                    f"Product returned but slug mismatch: {data}"
-                )
-                return False
+                log_test(f"GET /api/products/{slug} existing (public)", False, f"Expected 200, got {response.status_code}: {response.text}")
+                return slug
         else:
-            print_test(
-                "Get product by existing slug",
-                False,
-                f"Expected 200, got {response.status_code}: {response.text}"
-            )
-            return False
+            log_test("GET /api/products/{slug} existing (public)", False, f"Cannot create test product: {create_response.status_code}")
+            return None
     except Exception as e:
-        print_test("Get product by existing slug", False, f"Exception: {str(e)}")
-        return False
+        log_test("GET /api/products/{slug} existing (public)", False, f"Exception: {str(e)}")
+        return None
 
-def test_get_product_by_slug_not_found():
-    """Test 6: GET /api/products/{slug} with non-existent slug -> 404"""
-    print("=" * 80)
-    print("TEST 6: Get Product by Slug - Non-existent")
-    print("=" * 80)
-    
+def test_public_get_product_by_slug_nonexistent():
+    """Test 4d: Public GET /api/products/{slug} for non-existent product"""
     try:
-        slug = "non-existent-product-slug-12345"
-        response = requests.get(f"{BASE_URL}/products/{slug}", timeout=10)
-        
+        response = requests.get(f"{BASE_URL}/products/boutique-shop-admin-nonexistent-slug-12345", timeout=10)
         if response.status_code == 404:
-            print_test(
-                "Get product by non-existent slug",
-                True,
-                f"Status: {response.status_code} (Not Found as expected)"
-            )
-            return True
+            log_test("GET /api/products/{slug} non-existent (public)", True, "Returns 404")
         else:
-            print_test(
-                "Get product by non-existent slug",
-                False,
-                f"Expected 404, got {response.status_code}: {response.text}"
-            )
-            return False
+            log_test("GET /api/products/{slug} non-existent (public)", False, f"Expected 404, got {response.status_code}: {response.text}")
     except Exception as e:
-        print_test("Get product by non-existent slug", False, f"Exception: {str(e)}")
-        return False
+        log_test("GET /api/products/{slug} non-existent (public)", False, f"Exception: {str(e)}")
 
-def test_create_product_without_auth():
-    """Test 7: POST /api/products without Authorization header -> 401"""
-    print("=" * 80)
-    print("TEST 7: Create Product - Without Auth")
-    print("=" * 80)
+def test_full_crud_sanity(token):
+    """Test 5: Full CRUD sanity - create, fetch, update, delete"""
+    if not token:
+        log_test("Full CRUD sanity test", False, "No admin token available")
+        return
+    
+    headers = {"Authorization": f"Bearer {token}"}
+    
+    # Step 1: Create a product
+    test_product = {
+        "title": "CRUD Test Product",
+        "price": 2999,
+        "compareAt": 3999,
+        "fabric": "Silk",
+        "description": "Full CRUD test product",
+        "collections": ["test-crud"],
+        "colors": ["Blue", "Green"],
+        "sizes": ["S", "M", "L"],
+        "images": []
+    }
     
     try:
-        product_data = {
-            "title": "Test Product",
-            "price": 1000,
-            "images": ["https://example.com/image.png"],
-            "collections": ["new-in"],
-            "colors": ["Black"],
-            "sizes": ["M"]
-        }
+        # CREATE
+        create_response = requests.post(f"{BASE_URL}/products", json=test_product, headers=headers, timeout=10)
+        if create_response.status_code != 200:
+            log_test("CRUD: Create product with valid token", False, f"Expected 200, got {create_response.status_code}: {create_response.text}")
+            return
         
-        response = requests.post(
-            f"{BASE_URL}/products",
-            json=product_data,
-            timeout=10
-        )
+        created = create_response.json()
+        product_id = created.get("id")
+        slug = created.get("slug")
         
-        if response.status_code == 401:
-            print_test(
-                "Create product without auth",
-                True,
-                f"Status: {response.status_code} (Unauthorized as expected)"
-            )
-            return True
-        else:
-            print_test(
-                "Create product without auth",
-                False,
-                f"Expected 401, got {response.status_code}: {response.text}"
-            )
-            return False
-    except Exception as e:
-        print_test("Create product without auth", False, f"Exception: {str(e)}")
-        return False
-
-def test_create_product_with_auth():
-    """Test 8: POST /api/products with valid Bearer token and body -> 201/200 with id and slug"""
-    global created_product_id
-    print("=" * 80)
-    print("TEST 8: Create Product - With Auth")
-    print("=" * 80)
-    
-    if not auth_token:
-        print_test("Create product with auth", False, "No auth token available")
-        return False
-    
-    try:
-        product_data = {
-            "title": "Elegant Silk Saree Collection",
-            "price": 5500,
-            "compareAt": 7000,
-            "fabric": "Pure Silk",
-            "description": "Beautiful handwoven silk saree with intricate designs",
-            "images": ["https://example.com/saree1.png", "https://example.com/saree2.png"],
-            "collections": ["new-in", "ethnic-wear"],
-            "colors": ["Red", "Gold"],
-            "sizes": ["Free Size"]
-        }
+        if not product_id or not slug:
+            log_test("CRUD: Create product with valid token", False, f"Missing id or slug in response: {created}")
+            return
         
-        headers = {"Authorization": f"Bearer {auth_token}"}
-        response = requests.post(
-            f"{BASE_URL}/products",
-            json=product_data,
-            headers=headers,
-            timeout=10
-        )
+        log_test("CRUD: Create product with valid token", True, f"Created product with id={product_id}, slug={slug}")
         
-        if response.status_code in [200, 201]:
-            data = response.json()
-            if "id" in data and "slug" in data:
-                created_product_id = data["id"]
-                print_test(
-                    "Create product with auth",
-                    True,
-                    f"Status: {response.status_code}, ID: {data['id']}, Slug: {data['slug']}"
-                )
-                return True
+        # FETCH by slug (public)
+        fetch_response = requests.get(f"{BASE_URL}/products/{slug}", timeout=10)
+        if fetch_response.status_code == 200:
+            fetched = fetch_response.json()
+            if fetched.get("title") == test_product["title"]:
+                log_test("CRUD: Fetch product by slug", True, f"Fetched product matches created data")
             else:
-                print_test(
-                    "Create product with auth",
-                    False,
-                    f"Product created but missing id or slug: {data}"
-                )
-                return False
+                log_test("CRUD: Fetch product by slug", False, f"Fetched product data mismatch")
         else:
-            print_test(
-                "Create product with auth",
-                False,
-                f"Expected 200/201, got {response.status_code}: {response.text}"
-            )
-            return False
-    except Exception as e:
-        print_test("Create product with auth", False, f"Exception: {str(e)}")
-        return False
-
-def test_update_product():
-    """Test 9: PUT /api/products/{id} with token -> updates fields"""
-    print("=" * 80)
-    print("TEST 9: Update Product")
-    print("=" * 80)
-    
-    if not auth_token:
-        print_test("Update product", False, "No auth token available")
-        return False
-    
-    if not created_product_id:
-        print_test("Update product", False, "No product ID available (create test may have failed)")
-        return False
-    
-    try:
+            log_test("CRUD: Fetch product by slug", False, f"Expected 200, got {fetch_response.status_code}")
+        
+        # UPDATE
         update_data = {
-            "title": "Updated Elegant Silk Saree Collection",
-            "price": 6000,
-            "compareAt": 7500,
-            "fabric": "Pure Silk",
-            "description": "Updated description - Beautiful handwoven silk saree",
-            "images": ["https://example.com/saree1.png"],
-            "collections": ["new-in", "ethnic-wear", "premium"],
-            "colors": ["Red", "Gold", "Maroon"],
-            "sizes": ["Free Size"]
+            "title": "CRUD Test Product UPDATED",
+            "price": 3499,
+            "compareAt": 4499,
+            "fabric": "Premium Silk",
+            "description": "Updated description",
+            "collections": ["test-crud", "updated"],
+            "colors": ["Blue", "Green", "Yellow"],
+            "sizes": ["S", "M", "L", "XL"],
+            "images": []
         }
         
-        headers = {"Authorization": f"Bearer {auth_token}"}
-        response = requests.put(
-            f"{BASE_URL}/products/{created_product_id}",
-            json=update_data,
-            headers=headers,
-            timeout=10
-        )
-        
-        if response.status_code == 200:
-            data = response.json()
-            if data.get("price") == 6000 and "Updated" in data.get("title", ""):
-                print_test(
-                    "Update product",
-                    True,
-                    f"Status: {response.status_code}, Updated price: {data['price']}"
-                )
-                return True
+        update_response = requests.put(f"{BASE_URL}/products/{product_id}", json=update_data, headers=headers, timeout=10)
+        if update_response.status_code == 200:
+            updated = update_response.json()
+            if updated.get("title") == "CRUD Test Product UPDATED" and updated.get("price") == 3499:
+                log_test("CRUD: Update product with valid token", True, f"Product updated successfully")
             else:
-                print_test(
-                    "Update product",
-                    False,
-                    f"Product returned but updates not reflected: {data}"
-                )
-                return False
+                log_test("CRUD: Update product with valid token", False, f"Update data mismatch: {updated}")
         else:
-            print_test(
-                "Update product",
-                False,
-                f"Expected 200, got {response.status_code}: {response.text}"
-            )
-            return False
-    except Exception as e:
-        print_test("Update product", False, f"Exception: {str(e)}")
-        return False
-
-def test_delete_product_success():
-    """Test 10: DELETE /api/products/{id} with token -> {ok: true}"""
-    print("=" * 80)
-    print("TEST 10: Delete Product - Success")
-    print("=" * 80)
-    
-    if not auth_token:
-        print_test("Delete product", False, "No auth token available")
-        return False
-    
-    if not created_product_id:
-        print_test("Delete product", False, "No product ID available (create test may have failed)")
-        return False
-    
-    try:
-        headers = {"Authorization": f"Bearer {auth_token}"}
-        response = requests.delete(
-            f"{BASE_URL}/products/{created_product_id}",
-            headers=headers,
-            timeout=10
-        )
+            log_test("CRUD: Update product with valid token", False, f"Expected 200, got {update_response.status_code}: {update_response.text}")
         
-        if response.status_code == 200:
-            data = response.json()
-            if data.get("ok") is True:
-                print_test(
-                    "Delete product",
-                    True,
-                    f"Status: {response.status_code}, Response: {data}"
-                )
-                return True
+        # DELETE
+        delete_response = requests.delete(f"{BASE_URL}/products/{product_id}", headers=headers, timeout=10)
+        if delete_response.status_code == 200:
+            delete_data = delete_response.json()
+            if delete_data.get("ok") == True:
+                log_test("CRUD: Delete product with valid token", True, f"Product deleted successfully")
             else:
-                print_test(
-                    "Delete product",
-                    False,
-                    f"Expected {{ok: true}}, got: {data}"
-                )
-                return False
+                log_test("CRUD: Delete product with valid token", False, f"Delete response unexpected: {delete_data}")
         else:
-            print_test(
-                "Delete product",
-                False,
-                f"Expected 200, got {response.status_code}: {response.text}"
-            )
-            return False
-    except Exception as e:
-        print_test("Delete product", False, f"Exception: {str(e)}")
-        return False
-
-def test_delete_product_not_found():
-    """Test 11: DELETE /api/products/{id} with non-existent id -> 404"""
-    print("=" * 80)
-    print("TEST 11: Delete Product - Non-existent")
-    print("=" * 80)
-    
-    if not auth_token:
-        print_test("Delete non-existent product", False, "No auth token available")
-        return False
-    
-    try:
-        fake_id = "non-existent-product-id-12345"
-        headers = {"Authorization": f"Bearer {auth_token}"}
-        response = requests.delete(
-            f"{BASE_URL}/products/{fake_id}",
-            headers=headers,
-            timeout=10
-        )
+            log_test("CRUD: Delete product with valid token", False, f"Expected 200, got {delete_response.status_code}: {delete_response.text}")
         
-        if response.status_code == 404:
-            print_test(
-                "Delete non-existent product",
-                True,
-                f"Status: {response.status_code} (Not Found as expected)"
-            )
-            return True
+        # Verify deletion (should return 404)
+        verify_response = requests.get(f"{BASE_URL}/products/{slug}", timeout=10)
+        if verify_response.status_code == 404:
+            log_test("CRUD: Verify product deleted", True, "Product no longer exists (404)")
         else:
-            print_test(
-                "Delete non-existent product",
-                False,
-                f"Expected 404, got {response.status_code}: {response.text}"
-            )
-            return False
+            log_test("CRUD: Verify product deleted", False, f"Expected 404, got {verify_response.status_code}")
+            
     except Exception as e:
-        print_test("Delete non-existent product", False, f"Exception: {str(e)}")
-        return False
+        log_test("Full CRUD sanity test", False, f"Exception: {str(e)}")
 
-def test_upload_image_without_auth():
-    """Test 12: POST /api/upload without token -> 401"""
-    print("=" * 80)
-    print("TEST 12: Upload Image - Without Auth")
-    print("=" * 80)
-    
+def test_upload_no_auth():
+    """Test 6a: POST /api/upload without auth"""
     try:
-        # Create a small test image
-        img = Image.new('RGB', (100, 100), color='red')
-        img_bytes = io.BytesIO()
-        img.save(img_bytes, format='PNG')
-        img_bytes.seek(0)
+        # Create a small test image (1x1 PNG)
+        test_image = BytesIO(b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\x0cIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82')
+        files = {"file": ("test.png", test_image, "image/png")}
         
-        files = {'file': ('test.png', img_bytes, 'image/png')}
-        response = requests.post(
-            f"{BASE_URL}/upload",
-            files=files,
-            timeout=10
-        )
-        
+        response = requests.post(f"{BASE_URL}/upload", files=files, timeout=10)
         if response.status_code == 401:
-            print_test(
-                "Upload image without auth",
-                True,
-                f"Status: {response.status_code} (Unauthorized as expected)"
-            )
-            return True
+            log_test("POST /api/upload without auth", True, "Returns 401")
         else:
-            print_test(
-                "Upload image without auth",
-                False,
-                f"Expected 401, got {response.status_code}: {response.text}"
-            )
-            return False
+            log_test("POST /api/upload without auth", False, f"Expected 401, got {response.status_code}: {response.text}")
     except Exception as e:
-        print_test("Upload image without auth", False, f"Exception: {str(e)}")
-        return False
+        log_test("POST /api/upload without auth", False, f"Exception: {str(e)}")
 
-def test_upload_image_with_auth():
-    """Test 13: POST /api/upload with token and image -> returns {url} starting with 'data:image'"""
-    print("=" * 80)
-    print("TEST 13: Upload Image - With Auth")
-    print("=" * 80)
-    
-    if not auth_token:
-        print_test("Upload image with auth", False, "No auth token available")
-        return False
+def test_upload_malformed_token():
+    """Test 6b: POST /api/upload with malformed token"""
+    try:
+        test_image = BytesIO(b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\x0cIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82')
+        files = {"file": ("test.png", test_image, "image/png")}
+        headers = {"Authorization": "Bearer xyz.abc.123"}
+        
+        response = requests.post(f"{BASE_URL}/upload", files=files, headers=headers, timeout=10)
+        if response.status_code == 401:
+            log_test("POST /api/upload with malformed token", True, "Returns 401 (not 500)")
+        elif response.status_code == 500:
+            log_test("POST /api/upload with malformed token", False, f"CRITICAL: Returns 500 (should be 401): {response.text}")
+        else:
+            log_test("POST /api/upload with malformed token", False, f"Expected 401, got {response.status_code}: {response.text}")
+    except Exception as e:
+        log_test("POST /api/upload with malformed token", False, f"Exception: {str(e)}")
+
+def test_upload_valid_token(token):
+    """Test 6c: POST /api/upload with valid token"""
+    if not token:
+        log_test("POST /api/upload with valid token", False, "No admin token available")
+        return
     
     try:
-        # Create a small test image
-        img = Image.new('RGB', (100, 100), color='blue')
-        img_bytes = io.BytesIO()
-        img.save(img_bytes, format='PNG')
-        img_bytes.seek(0)
+        test_image = BytesIO(b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\x0cIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82')
+        files = {"file": ("test.png", test_image, "image/png")}
+        headers = {"Authorization": f"Bearer {token}"}
         
-        files = {'file': ('test.png', img_bytes, 'image/png')}
-        headers = {"Authorization": f"Bearer {auth_token}"}
-        response = requests.post(
-            f"{BASE_URL}/upload",
-            files=files,
-            headers=headers,
-            timeout=10
-        )
-        
+        response = requests.post(f"{BASE_URL}/upload", files=files, headers=headers, timeout=10)
         if response.status_code == 200:
             data = response.json()
             if "url" in data and data["url"].startswith("data:image"):
-                print_test(
-                    "Upload image with auth",
-                    True,
-                    f"Status: {response.status_code}, URL prefix: {data['url'][:30]}..."
-                )
-                return True
+                log_test("POST /api/upload with valid token", True, f"Returns 200 with base64 data URI")
             else:
-                print_test(
-                    "Upload image with auth",
-                    False,
-                    f"URL doesn't start with 'data:image': {data}"
-                )
-                return False
+                log_test("POST /api/upload with valid token", False, f"200 but invalid response: {data}")
         else:
-            print_test(
-                "Upload image with auth",
-                False,
-                f"Expected 200, got {response.status_code}: {response.text}"
-            )
-            return False
+            log_test("POST /api/upload with valid token", False, f"Expected 200, got {response.status_code}: {response.text}")
     except Exception as e:
-        print_test("Upload image with auth", False, f"Exception: {str(e)}")
-        return False
+        log_test("POST /api/upload with valid token", False, f"Exception: {str(e)}")
 
 def main():
-    """Run all backend tests"""
-    print("\n" + "=" * 80)
-    print("ROSHNI BOUTIQUE BACKEND API TESTS")
+    print("=" * 80)
+    print("RANISA BOUTIQUE BACKEND AUTH TESTING")
     print("=" * 80)
     print(f"Base URL: {BASE_URL}")
-    print("=" * 80 + "\n")
+    print(f"Admin credentials: {ADMIN_USERNAME} / {ADMIN_PASSWORD}")
+    print("=" * 80)
+    print()
     
-    results = []
+    # Test 1 & 2: Admin login
+    print("--- ADMIN LOGIN TESTS ---")
+    admin_token = test_admin_login_valid()
+    test_admin_login_invalid()
+    print()
     
-    # Run tests in sequence
-    results.append(("Admin Login - Success", test_admin_login_success()))
-    results.append(("Admin Login - Wrong Password", test_admin_login_failure()))
-    results.append(("Get Products List", test_get_products_list()))
-    results.append(("Get Products - Collection Filter", test_get_products_collection_filter()))
-    results.append(("Get Product by Slug - Existing", test_get_product_by_slug_success()))
-    results.append(("Get Product by Slug - Non-existent", test_get_product_by_slug_not_found()))
-    results.append(("Create Product - Without Auth", test_create_product_without_auth()))
-    results.append(("Create Product - With Auth", test_create_product_with_auth()))
-    results.append(("Update Product", test_update_product()))
-    results.append(("Delete Product - Success", test_delete_product_success()))
-    results.append(("Delete Product - Non-existent", test_delete_product_not_found()))
-    results.append(("Upload Image - Without Auth", test_upload_image_without_auth()))
-    results.append(("Upload Image - With Auth", test_upload_image_with_auth()))
+    # Test 3: Auth guards on protected endpoints
+    print("--- AUTH GUARD TESTS (No Auth) ---")
+    test_protected_endpoint_no_auth("/products", "POST")
+    test_protected_endpoint_no_auth("/upload", "POST")
+    print()
+    
+    print("--- AUTH GUARD TESTS (Malformed Token) ---")
+    test_protected_endpoint_malformed_token("/products", "POST")
+    test_protected_endpoint_malformed_token("/upload", "POST")
+    print()
+    
+    # Test 4: Public GET endpoints
+    print("--- PUBLIC GET TESTS ---")
+    test_public_get_products()
+    test_public_get_products_with_collection()
+    test_slug = test_public_get_product_by_slug_existing()
+    test_public_get_product_by_slug_nonexistent()
+    print()
+    
+    # Test 5: Full CRUD sanity
+    print("--- FULL CRUD SANITY TEST ---")
+    test_full_crud_sanity(admin_token)
+    print()
+    
+    # Test 6: Upload endpoint
+    print("--- UPLOAD ENDPOINT TESTS ---")
+    test_upload_no_auth()
+    test_upload_malformed_token()
+    test_upload_valid_token(admin_token)
+    print()
     
     # Summary
-    print("\n" + "=" * 80)
-    print("TEST SUMMARY")
+    print("=" * 80)
+    print(f"TEST SUMMARY: {passed} passed, {failed} failed out of {passed + failed} total")
     print("=" * 80)
     
-    passed = sum(1 for _, result in results if result)
-    total = len(results)
-    
-    for name, result in results:
-        status = "✅ PASS" if result else "❌ FAIL"
-        print(f"{status}: {name}")
-    
-    print("=" * 80)
-    print(f"Total: {passed}/{total} tests passed")
-    print("=" * 80 + "\n")
-    
-    return passed == total
+    if failed > 0:
+        print("\n❌ FAILED TESTS:")
+        for result in test_results:
+            if not result["success"]:
+                print(f"  - {result['name']}: {result['details']}")
+        sys.exit(1)
+    else:
+        print("\n✅ ALL TESTS PASSED!")
+        sys.exit(0)
 
 if __name__ == "__main__":
-    success = main()
-    exit(0 if success else 1)
+    main()

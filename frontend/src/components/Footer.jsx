@@ -4,6 +4,7 @@ import { Instagram, Facebook, Youtube, Mail, Phone, MapPin } from 'lucide-react'
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { useToast } from '../hooks/use-toast';
+import { LOGO_URL } from '../data/mock';
 
 const Footer = () => {
   const [email, setEmail] = useState('');
@@ -43,8 +44,7 @@ const Footer = () => {
       <div className="max-w-[1400px] mx-auto px-4 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 lg:gap-16">
           <div className="md:col-span-1">
-            <span className="font-serif-display text-3xl font-semibold text-primary">Ranisa</span>
-            <span className="block text-[0.6rem] tracking-[0.45em] uppercase text-muted-foreground">Boutique</span>
+            <img src={LOGO_URL} alt="Rani Sa Boutique" className="h-16 w-auto object-contain rounded-sm" />
             <p className="text-sm text-muted-foreground mt-4 leading-relaxed">
               Your home for elegant, handcrafted women's ethnic wear. Where style meets culture, effortlessly.
             </p>
