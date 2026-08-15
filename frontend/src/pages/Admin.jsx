@@ -181,7 +181,7 @@ const ProductForm = ({ initial, onClose, onSaved }) => {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label className="text-xs uppercase tracking-widest">Collections</Label>
-              <Input value={form.collections} onChange={(e) => setForm({ ...form, collections: e.target.value })} className="rounded-none mt-1.5" placeholder="new-in, party-wear" />
+              <Input value={form.collections} onChange={(e) => setForm({ ...form, collections: e.target.value })} className="rounded-none mt-1.5" placeholder="casual-wear, party-wear, ethnic-wear" />
             </div>
             <div>
               <Label className="text-xs uppercase tracking-widest">Fabric</Label>

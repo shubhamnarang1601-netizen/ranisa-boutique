@@ -7,7 +7,6 @@ import { fetchProducts } from '../lib/api';
 import {
   QUOTE,
   COLLECTION_TILES,
-  SHOP_BY_CATEGORY,
   INSTAGRAM_IMAGES,
   REVIEWS,
   FEATURES,
@@ -74,22 +73,6 @@ const ProductRow = ({ title, sub, handle, products }) => (
   </section>
 );
 
-const ShopByCategory = () => (
-  <section className="max-w-[1400px] mx-auto px-4 lg:px-8 py-16">
-    <SectionTitle sub="Find Your Style">Shop by Category</SectionTitle>
-    <div className="flex gap-6 overflow-x-auto no-scrollbar pb-2 lg:grid lg:grid-cols-6 lg:overflow-visible">
-      {SHOP_BY_CATEGORY.map((t) => (
-        <Link key={t.title} to={`/collections/${t.handle}`} className="group shrink-0 w-32 lg:w-auto">
-          <div className="img-zoom-wrap aspect-square bg-secondary rounded-full overflow-hidden border border-border shadow-sm">
-            <img src={t.image} alt={t.title} className="w-full h-full object-cover" loading="lazy" />
-          </div>
-          <p className="text-center text-xs uppercase tracking-widest mt-4 group-hover:text-primary transition-colors">{t.title}</p>
-        </Link>
-      ))}
-    </div>
-  </section>
-);
-
 const InstagramGallery = () => (
   <section className="max-w-[1400px] mx-auto px-4 lg:px-8 py-16">
     <SectionTitle sub="@ranisaboutique">#CelebrateInRanisa</SectionTitle>
@@ -151,7 +134,7 @@ const Home = () => {
 
   useEffect(() => {
     let active = true;
-    Promise.all([fetchProducts('new-in'), fetchProducts('best-sellers')])
+    Promise.all([fetchProducts('casual-wear'), fetchProducts('party-wear')])
       .then(([n, l]) => {
         if (!active) return;
         setLatest(n.slice(0, 4));
@@ -169,12 +152,11 @@ const Home = () => {
       <QuoteStrip />
       <CollectionsBrowse />
       {latest.length > 0 && (
-        <ProductRow title="Latest Collection by Ranisa" sub="Just Arrived" handle="new-in" products={latest} />
+        <ProductRow title="Casual Wear" sub="Everyday Elegance" handle="casual-wear" products={latest} />
       )}
       {luxurio.length > 0 && (
-        <ProductRow title="Best Sellers" sub="Loved by Our Ladies" handle="best-sellers" products={luxurio} />
+        <ProductRow title="Party Wear" sub="Celebrate in Style" handle="party-wear" products={luxurio} />
       )}
-      <ShopByCategory />
       <InstagramGallery />
       <Reviews />
       <FeaturesStrip />

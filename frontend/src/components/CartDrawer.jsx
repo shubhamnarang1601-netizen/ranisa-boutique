@@ -29,7 +29,7 @@ const CartDrawer = () => {
             <ShoppingBag className="w-12 h-12 text-muted-foreground" strokeWidth={1} />
             <p className="text-muted-foreground">Your cart is empty</p>
             <Button asChild onClick={() => setOpen(false)} className="rounded-none uppercase tracking-widest">
-              <Link to="/collections/new-in">Continue Shopping</Link>
+              <Link to="/collections/casual-wear">Continue Shopping</Link>
             </Button>
           </div>
         ) : (

@@ -94,7 +94,7 @@ const Header = () => {
 
             {/* Icons */}
             <div className="flex items-center gap-4 lg:gap-5 lg:flex-1 justify-end">
-              <button aria-label="Search" className="hover:text-primary transition-colors" onClick={() => navigate('/collections/new-in')}>
+              <button aria-label="Search" className="hover:text-primary transition-colors" onClick={() => navigate('/collections/casual-wear')}>
                 <Search className="w-5 h-5" />
               </button>
               <Link to="/admin" aria-label="Account" className="hidden sm:block hover:text-primary transition-colors">

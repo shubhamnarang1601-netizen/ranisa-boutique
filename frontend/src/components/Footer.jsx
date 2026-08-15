@@ -20,11 +20,9 @@ const Footer = () => {
     {
       title: 'Shop',
       links: [
-        { label: 'New In', to: '/collections/new-in' },
-        { label: 'Best Sellers', to: '/collections/best-sellers' },
-        { label: 'Party Wear', to: '/collections/party-wear' },
         { label: 'Casual Wear', to: '/collections/casual-wear' },
-        { label: 'Plus Size', to: '/collections/plus-size' },
+        { label: 'Party Wear', to: '/collections/party-wear' },
+        { label: 'Ethnic Wear', to: '/collections/ethnic-wear' },
       ],
     },
     {

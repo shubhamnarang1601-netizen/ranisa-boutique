@@ -73,7 +73,7 @@ const ProductDetail = () => {
     return (
       <div className="max-w-3xl mx-auto py-32 text-center px-4">
         <h1 className="font-serif-display text-3xl mb-4">Product not found</h1>
-        <Link to="/collections/new-in" className="text-primary underline">Browse collections</Link>
+        <Link to="/collections/casual-wear" className="text-primary underline">Browse collections</Link>
       </div>
     );
   }
