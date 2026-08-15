@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ChevronRight, Star } from 'lucide-react';
+import { Star } from 'lucide-react';
 import HeroCarousel from '../components/HeroCarousel';
-import ProductCard from '../components/ProductCard';
+import FilterableProducts from '../components/FilterableProducts';
 import { fetchProducts } from '../lib/api';
 import { QUOTE, REVIEWS, FEATURES } from '../data/mock';
 
@@ -64,21 +63,7 @@ const ShopSection = () => {
           </p>
         </div>
       ) : (
-        <>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-10 lg:gap-x-6">
-            {items.slice(0, 12).map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
-          <div className="text-center mt-12">
-            <Link
-              to="/collections/casual-wear"
-              className="inline-flex items-center gap-2 border border-foreground/80 px-8 py-3 text-xs uppercase tracking-[0.25em] hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors"
-            >
-              View All <ChevronRight className="w-4 h-4" />
-            </Link>
-          </div>
-        </>
+        <FilterableProducts products={items} />
       )}
     </section>
   );
