@@ -7,7 +7,7 @@ import { fetchProducts } from '../lib/api';
 import {
   QUOTE,
   COLLECTION_TILES,
-  CATEGORY_BANNERS,
+  SHOP_BY_CATEGORY,
   INSTAGRAM_IMAGES,
   REVIEWS,
   FEATURES,
@@ -37,7 +37,7 @@ const SectionTitle = ({ children, sub }) => (
 
 const CollectionsBrowse = () => (
   <section className="max-w-[1400px] mx-auto px-4 lg:px-8 py-16">
-    <SectionTitle sub="Explore">Collections by Roshni</SectionTitle>
+    <SectionTitle sub="Explore">Collections by Ranisa</SectionTitle>
     <p className="text-center text-muted-foreground italic max-w-2xl mx-auto mb-12 font-serif-display text-xl">
       Step into elegance, embrace tradition. Our ethnic wear is not just fashion; it's a celebration of
       womanhood, where style meets culture effortlessly.
@@ -74,18 +74,16 @@ const ProductRow = ({ title, sub, handle, products }) => (
   </section>
 );
 
-const CategoryBanner = ({ block }) => (
-  <section className="max-w-[1400px] mx-auto px-4 lg:px-8 py-10">
-    <Link to={`/collections/${block.handle}`} className="block img-zoom-wrap rounded-sm overflow-hidden mb-6">
-      <img src={block.banner} alt={block.title} className="w-full h-auto object-cover" loading="lazy" />
-    </Link>
-    <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2 lg:grid lg:grid-cols-8 lg:overflow-visible">
-      {block.tiles.map((t) => (
-        <Link key={t.handle} to={`/collections/${t.handle}`} className="group shrink-0 w-32 lg:w-auto">
-          <div className="img-zoom-wrap aspect-square bg-secondary rounded-full overflow-hidden border border-border">
+const ShopByCategory = () => (
+  <section className="max-w-[1400px] mx-auto px-4 lg:px-8 py-16">
+    <SectionTitle sub="Find Your Style">Shop by Category</SectionTitle>
+    <div className="flex gap-6 overflow-x-auto no-scrollbar pb-2 lg:grid lg:grid-cols-6 lg:overflow-visible">
+      {SHOP_BY_CATEGORY.map((t) => (
+        <Link key={t.title} to={`/collections/${t.handle}`} className="group shrink-0 w-32 lg:w-auto">
+          <div className="img-zoom-wrap aspect-square bg-secondary rounded-full overflow-hidden border border-border shadow-sm">
             <img src={t.image} alt={t.title} className="w-full h-full object-cover" loading="lazy" />
           </div>
-          <p className="text-center text-xs uppercase tracking-widest mt-3 group-hover:text-primary transition-colors">{t.title}</p>
+          <p className="text-center text-xs uppercase tracking-widest mt-4 group-hover:text-primary transition-colors">{t.title}</p>
         </Link>
       ))}
     </div>
@@ -94,17 +92,19 @@ const CategoryBanner = ({ block }) => (
 
 const InstagramGallery = () => (
   <section className="max-w-[1400px] mx-auto px-4 lg:px-8 py-16">
-    <SectionTitle sub="@roshniboutique">#CelebrateInRoshni</SectionTitle>
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 lg:gap-3">
+    <SectionTitle sub="@ranisaboutique">#CelebrateInRanisa</SectionTitle>
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 lg:gap-3">
       {INSTAGRAM_IMAGES.map((src, i) => (
         <a key={i} href="#" className="group relative img-zoom-wrap aspect-square bg-secondary overflow-hidden rounded-sm">
-          <img src={src} alt={`Roshni look ${i + 1}`} className="w-full h-full object-cover" loading="lazy" />
+          <img src={src} alt={`Ranisa look ${i + 1}`} className="w-full h-full object-cover" loading="lazy" />
           <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/20 transition-colors" />
         </a>
       ))}
     </div>
   </section>
 );
+
+const initials = (name) => name.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase();
 
 const Reviews = () => (
   <section className="bg-secondary/50 py-20 mt-10">
@@ -120,7 +120,9 @@ const Reviews = () => (
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed mb-6">"{r.text}"</p>
             <div className="flex items-center gap-3">
-              <img src={r.image} alt={r.name} className="w-10 h-10 rounded-full object-cover bg-secondary" />
+              <span className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-medium">
+                {initials(r.name)}
+              </span>
               <span className="font-medium text-sm">{r.name}</span>
             </div>
           </div>
@@ -149,7 +151,7 @@ const Home = () => {
 
   useEffect(() => {
     let active = true;
-    Promise.all([fetchProducts('new-in'), fetchProducts('luxurio')])
+    Promise.all([fetchProducts('new-in'), fetchProducts('best-sellers')])
       .then(([n, l]) => {
         if (!active) return;
         setLatest(n.slice(0, 4));
@@ -167,14 +169,12 @@ const Home = () => {
       <QuoteStrip />
       <CollectionsBrowse />
       {latest.length > 0 && (
-        <ProductRow title="Latest Collection by Roshni" sub="Just Arrived" handle="new-in" products={latest} />
+        <ProductRow title="Latest Collection by Ranisa" sub="Just Arrived" handle="new-in" products={latest} />
       )}
       {luxurio.length > 0 && (
-        <ProductRow title="Luxurio - by Roshni" sub="Premium Edit" handle="luxurio" products={luxurio} />
+        <ProductRow title="Best Sellers" sub="Loved by Our Ladies" handle="best-sellers" products={luxurio} />
       )}
-      {CATEGORY_BANNERS.map((block) => (
-        <CategoryBanner key={block.handle} block={block} />
-      ))}
+      <ShopByCategory />
       <InstagramGallery />
       <Reviews />
       <FeaturesStrip />

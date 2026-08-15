@@ -35,7 +35,7 @@ const LoginView = ({ onLogin }) => {
       await adminLogin(user, pass);
       onLogin();
     } catch {
-      toast({ title: 'Invalid credentials', description: 'Try admin / roshni123', variant: 'destructive' });
+      toast({ title: 'Invalid credentials', description: 'Try admin / ranisa123', variant: 'destructive' });
     } finally {
       setBusy(false);
     }
@@ -45,7 +45,7 @@ const LoginView = ({ onLogin }) => {
     <div className="min-h-[70vh] flex items-center justify-center px-4">
       <div className="w-full max-w-sm border border-border p-8 rounded-sm">
         <div className="text-center mb-8">
-          <span className="font-serif-display text-3xl font-semibold text-primary">Roshni</span>
+          <span className="font-serif-display text-3xl font-semibold text-primary">Ranisa</span>
           <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mt-1">Admin Panel</p>
         </div>
         <form onSubmit={submit} className="space-y-4">
@@ -61,7 +61,7 @@ const LoginView = ({ onLogin }) => {
             {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Sign In'}
           </Button>
         </form>
-        <p className="text-xs text-muted-foreground text-center mt-6">Demo: admin / roshni123</p>
+        <p className="text-xs text-muted-foreground text-center mt-6">Demo: admin / ranisa123</p>
       </div>
     </div>
   );

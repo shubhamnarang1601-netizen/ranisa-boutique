@@ -12,7 +12,7 @@ const Footer = () => {
   const subscribe = (e) => {
     e.preventDefault();
     if (!email) return;
-    toast({ title: 'Subscribed!', description: 'Thank you for joining the Roshni family.' });
+    toast({ title: 'Subscribed!', description: 'Thank you for joining the Ranisa family.' });
     setEmail('');
   };
 
@@ -45,10 +45,10 @@ const Footer = () => {
       <div className="max-w-[1400px] mx-auto px-4 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 lg:gap-16">
           <div className="md:col-span-1">
-            <span className="font-serif-display text-3xl font-semibold text-primary">Roshni</span>
+            <span className="font-serif-display text-3xl font-semibold text-primary">Ranisa</span>
             <span className="block text-[0.6rem] tracking-[0.45em] uppercase text-muted-foreground">Boutique</span>
             <p className="text-sm text-muted-foreground mt-4 leading-relaxed">
-              Bangalore's home for elegant, handcrafted women's ethnic wear. Where style meets culture, effortlessly.
+              Your home for elegant, handcrafted women's ethnic wear. Where style meets culture, effortlessly.
             </p>
             <div className="flex gap-3 mt-5">
               {[Instagram, Facebook, Youtube].map((Icon, i) => (
@@ -87,7 +87,7 @@ const Footer = () => {
             </form>
             <ul className="mt-6 space-y-3 text-sm text-muted-foreground">
               <li className="flex items-center gap-2"><Phone className="w-4 h-4 text-primary" /> +91 98765 43210</li>
-              <li className="flex items-center gap-2"><Mail className="w-4 h-4 text-primary" /> care@roshniboutiques.com</li>
+              <li className="flex items-center gap-2"><Mail className="w-4 h-4 text-primary" /> care@ranisaboutique.com</li>
               <li className="flex items-start gap-2"><MapPin className="w-4 h-4 text-primary mt-0.5" /> Jayanagar, Bangalore, India</li>
             </ul>
           </div>
@@ -96,7 +96,7 @@ const Footer = () => {
 
       <div className="border-t border-border">
         <div className="max-w-[1400px] mx-auto px-4 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
-          <p>© {new Date().getFullYear()} Roshni Boutique. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Ranisa Boutique. All rights reserved.</p>
           <p>Crafted with love • A 100% women-owned enterprise</p>
         </div>
       </div>

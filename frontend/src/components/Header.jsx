@@ -52,7 +52,7 @@ const Header = () => {
                 </SheetTrigger>
                 <SheetContent side="left" className="w-80 p-0">
                   <div className="px-6 py-6">
-                    <p className="font-serif-display text-2xl mb-6">Roshni Collection</p>
+                    <p className="font-serif-display text-2xl mb-6">Ranisa Collection</p>
                     <nav className="flex flex-col">
                       {mainNav.map((c) => (
                         <Link
@@ -73,7 +73,7 @@ const Header = () => {
             {/* Logo */}
             <Link to="/" className="lg:flex-1 flex justify-center lg:justify-start">
               <div className="text-center lg:text-left">
-                <span className="font-serif-display text-3xl lg:text-4xl font-semibold tracking-wide text-primary">Roshni</span>
+                <span className="font-serif-display text-3xl lg:text-4xl font-semibold tracking-wide text-primary">Ranisa</span>
                 <span className="block text-[0.6rem] tracking-[0.45em] uppercase text-muted-foreground -mt-1">Boutique</span>
               </div>
             </Link>
