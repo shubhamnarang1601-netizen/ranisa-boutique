@@ -14,17 +14,10 @@ export const NAV_COLLECTIONS = [
 export const HERO_SLIDES = [
   {
     id: 'h1',
-    image: 'https://images.unsplash.com/photo-1610030468706-9a6dbad49b0a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzB8MHwxfHNlYXJjaHw0fHxzYXJlZSUyMGZhc2hpb258ZW58MHx8fHwxNzg2NzgzNDk2fDA&ixlib=rb-4.1.0' + H,
+    image: 'https://customer-assets-jai6qajn.emergentagent.net/job_boutique-shop-admin/artifacts/udum7smc_image.png',
     link: '/collections/ethnic-wear',
     heading: 'The Festive Edit',
     sub: 'New Collection 2025',
-  },
-  {
-    id: 'h2',
-    image: 'https://images.unsplash.com/photo-1739429942851-9083ee185d3d?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzV8MHwxfHNlYXJjaHw0fHxpbmRpYW4lMjB3b21hbiUyMHNhcmVlfGVufDB8fHx8MTc4Njc4MzUwNHww&ixlib=rb-4.1.0' + H,
-    link: '/collections/party-wear',
-    heading: 'Grace in Every Drape',
-    sub: 'Handpicked Ethnic Wear',
   },
 ];
 
