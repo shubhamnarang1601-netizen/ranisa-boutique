@@ -14,7 +14,7 @@ export const NAV_COLLECTIONS = [
 export const HERO_SLIDES = [
   {
     id: 'h1',
-    image: 'https://customer-assets-jai6qajn.emergentagent.net/job_boutique-shop-admin/artifacts/udum7smc_image.png',
+    image: 'https://customer-assets-jai6qajn.emergentagent.net/job_boutique-shop-admin/artifacts/wexk1cfj_image.png',
     link: '/collections/ethnic-wear',
     heading: 'The Festive Edit',
     sub: 'New Collection 2025',
