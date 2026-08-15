@@ -27,11 +27,11 @@ const HeroCarousel = () => {
       </div>
 
       {/* Image panel */}
-      <div className="order-1 lg:order-2 relative overflow-hidden bg-[#ece4e2] min-h-[420px] lg:min-h-[640px]">
+      <div className="order-1 lg:order-2 relative overflow-hidden bg-[#ece4e2] min-h-[520px] lg:min-h-[640px]">
         <img
           src={slide.image}
           alt={slide.heading}
-          className="absolute inset-0 w-full h-full object-cover object-[center_20%]"
+          className="absolute inset-0 w-full h-full object-contain object-center"
         />
       </div>
     </section>
