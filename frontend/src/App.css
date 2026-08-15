@@ -1,0 +1,14 @@
+.App {
+    min-height: 100vh;
+}
+
+/* Smooth image hover zoom container */
+.img-zoom-wrap {
+    overflow: hidden;
+}
+.img-zoom-wrap img {
+    transition: transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.img-zoom-wrap:hover img {
+    transform: scale(1.06);
+}
