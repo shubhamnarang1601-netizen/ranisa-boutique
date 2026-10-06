@@ -1,129 +1,65 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { getAllProducts, getAllOrders } from '@/lib/firebase/firestore';
-import styles from './admin-dashboard.module.css';
+import { useEffect, useState } from "react";
+import Reveal from "../components/reveal";
+import AdminPanel from "./panel";
 
-export default function AdminDashboard() {
-    const [stats, setStats] = useState({
-        totalProducts: 0,
-        totalOrders: 0,
-        revenue: 0,
-        customers: 0,
-    });
-    const [loading, setLoading] = useState(true);
+const ADMIN_EMAIL = "shusol0016@gmail.com";
+type LoginResult = { access_token?: string; email?: string; error?: string };
 
-    useEffect(() => {
-        loadStats();
-    }, []);
+export default function AdminPage() {
+  const [token, setToken] = useState("");
+  const [email, setEmail] = useState(ADMIN_EMAIL);
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const [busy, setBusy] = useState(false);
 
-    const loadStats = async () => {
-        try {
-            const products = await getAllProducts();
-            const orders = await getAllOrders();
+  useEffect(() => { setToken(sessionStorage.getItem("ranisaAdminToken") || ""); }, []);
 
-            const revenue = orders.reduce((sum, order) => sum + (order.total || 0), 0);
-            const customers = new Set(orders.map((o) => o.userId)).size;
+  async function signIn(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setBusy(true);
+    setMessage("");
+    try {
+      const response = await fetch("/api/admin-auth", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await response.json() as LoginResult;
+      setPassword("");
+      if (!response.ok || !data.access_token) {
+        setMessage(data.error || "Sign-in failed. Check your email and password.");
+        return;
+      }
+      sessionStorage.setItem("ranisaAdminToken", data.access_token);
+      setToken(data.access_token);
+    } catch {
+      setMessage("Could not connect to Supabase. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
 
-            setStats({
-                totalProducts: products.length,
-                totalOrders: orders.length,
-                revenue,
-                customers,
-            });
-        } catch (error) {
-            console.error('Error loading stats:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+  function signOut() {
+    sessionStorage.removeItem("ranisaAdminToken");
+    setToken("");
+    setMessage("You are signed out.");
+  }
 
-    return (
-        <div className={styles.dashboard}>
-            <div className={styles.header}>
-                <h1>Admin Dashboard</h1>
-                <p>Welcome to Ranisa Boutique Admin Panel</p>
-            </div>
+  if (token) return <AdminPanel accessToken={token} onSignOut={signOut} />;
 
-            {/* Stats Grid */}
-            <div className={styles.statsGrid}>
-                <div className={styles.statCard}>
-                    <div className={styles.statIcon}>🛍️</div>
-                    <div className={styles.statInfo}>
-                        <p className={styles.statLabel}>Total Products</p>
-                        <h3 className={styles.statValue}>{loading ? '...' : stats.totalProducts}</h3>
-                    </div>
-                </div>
-
-                <div className={styles.statCard}>
-                    <div className={styles.statIcon}>📦</div>
-                    <div className={styles.statInfo}>
-                        <p className={styles.statLabel}>Total Orders</p>
-                        <h3 className={styles.statValue}>{loading ? '...' : stats.totalOrders}</h3>
-                    </div>
-                </div>
-
-                <div className={styles.statCard}>
-                    <div className={styles.statIcon}>💰</div>
-                    <div className={styles.statInfo}>
-                        <p className={styles.statLabel}>Revenue</p>
-                        <h3 className={styles.statValue}>₹{loading ? '...' : stats.revenue.toLocaleString()}</h3>
-                    </div>
-                </div>
-
-                <div className={styles.statCard}>
-                    <div className={styles.statIcon}>👥</div>
-                    <div className={styles.statInfo}>
-                        <p className={styles.statLabel}>Customers</p>
-                        <h3 className={styles.statValue}>{loading ? '...' : stats.customers}</h3>
-                    </div>
-                </div>
-            </div>
-
-            {/* Quick Actions */}
-            <div className={styles.quickActions}>
-                <h2>Quick Actions</h2>
-                <div className={styles.actionsGrid}>
-                    <Link href="/admin/products/add" className={styles.actionCard}>
-                        <span className={styles.actionIcon}>➕</span>
-                        <h3>Add Product</h3>
-                        <p>Upload new products with images and details</p>
-                    </Link>
-
-                    <Link href="/admin/products" className={styles.actionCard}>
-                        <span className={styles.actionIcon}>📝</span>
-                        <h3>Manage Products</h3>
-                        <p>Edit, update, or delete existing products</p>
-                    </Link>
-
-                    <Link href="/admin/orders" className={styles.actionCard}>
-                        <span className={styles.actionIcon}>📦</span>
-                        <h3>View Orders</h3>
-                        <p>Check and process customer orders</p>
-                    </Link>
-
-                    <Link href="/admin/customers" className={styles.actionCard}>
-                        <span className={styles.actionIcon}>👥</span>
-                        <h3>Customer List</h3>
-                        <p>View and manage customer information</p>
-                    </Link>
-                </div>
-            </div>
-
-            {/* Info Box */}
-            <div className={styles.infoBox}>
-                <h3>🔥 Getting Started</h3>
-                <ol>
-                    <li>Click <strong>&quot;Add Product&quot;</strong> to upload your first product</li>
-                    <li>Upload product images (JPG, PNG)</li>
-                    <li>Set price, category, description, and stock</li>
-                    <li>Click &quot;Publish Product&quot; to make it live!</li>
-                </ol>
-                <p className={styles.note}>
-                    💡 Tip: Products appear on your website instantly after publishing!
-                </p>
-            </div>
-        </div>
-    );
+  return <main className="page">
+    
+    <Reveal><p className="kicker">RANISA BOUTIQUE</p>
+    <h1>Admin <i>sign in</i></h1>
+    <p>Use the boutique administrator account to manage products.</p>
+    <form className="adminform" onSubmit={signIn}>
+      <label>Email<input type="email" autoComplete="username" value={email} onChange={event => setEmail(event.target.value)} required /></label>
+      <label>Password<input type="password" autoComplete="current-password" value={password} onChange={event => setPassword(event.target.value)} required /></label>
+      {message && <p role="status">{message}</p>}
+      <button className="btn" type="submit" disabled={busy}>{busy ? "SIGNING IN…" : "SIGN IN"}</button>
+    </form>
+    <p><a href="/">Return to the boutique</a></p>
+  </Reveal></main>;
 }

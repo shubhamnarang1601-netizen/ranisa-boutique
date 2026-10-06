@@ -1,0 +1,13 @@
+"use client";
+import {useEffect,useState} from "react";
+import Link from "next/link";
+import Dialog from "./dialog";
+import {useCart,updateCart} from "./cart-store";
+type Product={id:string;name:string;price:number;imageUrl:string};
+export default function CartDrawer({open,onClose}:{open:boolean;onClose:()=>void}){
+ const cart=useCart(),[products,setProducts]=useState<Product[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState("");
+ useEffect(()=>{if(!open)return;const ac=new AbortController();fetch("/api/products",{signal:ac.signal}).then(r=>{if(!r.ok)throw Error();return r.json() as Promise<{products?:Product[]}>}).then(d=>setProducts(d.products||[])).catch(e=>{if(e.name!=="AbortError")setError("Your bag is saved. We couldn’t load product details. Please try again.")}).finally(()=>setLoading(false));return()=>ac.abort()},[open]);
+ const lines=cart.map(x=>({...x,product:products.find(p=>p.id===x.id)}));
+ const total=lines.reduce((n,x)=>n+(x.product?.price||0)*x.qty,0);
+ return <Dialog open={open} onClose={onClose} title="Your selection" className="cart-drawer"><p className="eyebrow">A LITTLE SOMETHING, JUST FOR YOU</p>{cart.length===0?<div className="drawer-empty"><span className="empty-monogram">R</span><h3>Beautiful things await.</h3><p>Find a piece that feels like you, or let us create one together.</p><Link href="/shop" className="button" onClick={onClose}>Explore the collection</Link><Link href="/custom" className="text-link" onClick={onClose}>Plan a custom look</Link></div>:loading?<p role="status">Preparing your selection…</p>:error?<p role="alert">{error}</p>:<><div className="bag-lines">{lines.map(x=><article key={x.id} className="bag-line">{x.product?.imageUrl&&<img src={x.product.imageUrl} alt={x.product.name} width="90" height="120"/>}<div><h3>{x.product?.name||"Unavailable piece"}</h3><p>{x.product?`₹${x.product.price.toLocaleString("en-IN")}`:"Please remove this item"}</p><div className="quantity-controls"><button aria-label={`Decrease ${x.product?.name||"item"} quantity`} onClick={()=>updateCart(x.id,-1)}>−</button><span>{x.qty}</span><button aria-label={`Increase ${x.product?.name||"item"} quantity`} onClick={()=>updateCart(x.id,1)}>+</button></div><button className="plain-button" onClick={()=>updateCart(x.id,-x.qty)}>Remove</button></div></article>)}</div><div className="drawer-total"><span>Subtotal</span><b>₹{total.toLocaleString("en-IN")}</b></div><p className="small-note">Delivery and availability are confirmed with you. UPI & cash on delivery available.</p><Link href="/bag" className="button full-width" onClick={onClose}>Review your order</Link></>}</Dialog>
+}

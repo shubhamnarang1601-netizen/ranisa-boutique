@@ -1,33 +1,9 @@
-import type { Metadata } from 'next';
-import './globals.css';
-import { CartProvider } from '@/components/cart/CartProvider';
-
-export const metadata: Metadata = {
-  title: 'Ranisa Boutique - Premium Fashion & Ethnic Wear',
-  description:
-    'Discover exquisite collection of sarees, salwar suits, lehengas, and ethnic wear at Ranisa Boutique. Premium quality, latest designs, and best prices.',
-  keywords: [
-    'boutique',
-    'ethnic wear',
-    'sarees',
-    'salwar suits',
-    'lehengas',
-    'indian fashion',
-    'Ranisa Boutique',
-  ],
-};
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  return (
-    <html lang="en" suppressHydrationWarning>
-      <body>
-        <CartProvider>{children}</CartProvider>
-      </body>
-    </html>
-  );
-}
-
+import type {Metadata} from "next";
+import "./globals.css";
+import SiteHeader from "./components/site-header";
+import SiteFooter from "./components/site-footer";
+import WhatsAppFloat from "./components/whatsapp-float";
+import SiteEffects from "./components/site-effects";
+import CustomQuickForm from "./components/custom-quick-form";
+export const metadata:Metadata={metadataBase:new URL("https://ranisa-boutique-store.shubhamnarang1601.chatgpt.site"),title:{default:"Ranisa Boutique | Elegance, Tailored for You",template:"%s | Ranisa Boutique"},description:"Discover traditional suits, festive lehengas and thoughtful custom designs at Ranisa Boutique, Dehradun. Indian heritage, your own expression."};
+export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="en"><body><div className="site-backdrop" aria-hidden="true"><img src="/media/campaign-1600.webp" alt="" /></div><a className="skip-link" href="#main-content">Skip to content</a><SiteHeader/><div id="main-content">{children}</div><SiteFooter/><WhatsAppFloat/><CustomQuickForm/><SiteEffects/></body></html>}

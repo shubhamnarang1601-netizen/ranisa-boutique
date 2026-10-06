@@ -1,0 +1,1 @@
+export default function Loading(){return <div className="loading-screen" role="status"><span className="loading-mark">R</span><p>RANISA BOUTIQUE</p><span className="loading-line"/><span className="sr-only">Loading page</span></div>}

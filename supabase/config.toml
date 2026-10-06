@@ -1,5 +1,0 @@
-[functions.ranisa-otpless-verify]
-verify_jwt = false
-
-[functions.ranisa-cart]
-verify_jwt = false

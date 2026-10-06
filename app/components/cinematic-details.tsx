@@ -1,0 +1,11 @@
+"use client";
+import {useRef} from "react";
+import Link from "next/link";
+import {motion,useInView,useReducedMotion,useMotionValue,useSpring,useScroll,useTransform} from "motion/react";
+import type {ReactNode} from "react";
+export function MagneticLink({href,children,className="button"}:{href:string;children:ReactNode;className?:string}){
+ const reduce=useReducedMotion(),mx=useMotionValue(0),my=useMotionValue(0),x=useSpring(mx,{stiffness:180,damping:20}),y=useSpring(my,{stiffness:180,damping:20});
+ return <motion.span className="magnetic-wrap" style={{x:reduce?0:x,y:reduce?0:y}} onPointerMove={e=>{if(reduce||e.pointerType!=="mouse")return;const r=e.currentTarget.getBoundingClientRect();mx.set((e.clientX-r.left-r.width/2)*.07);my.set((e.clientY-r.top-r.height/2)*.09)}} onPointerLeave={()=>{mx.set(0);my.set(0)}}><Link href={href} className={className}>{children}</Link></motion.span>
+}
+export function AtelierFilm(){const ref=useRef<HTMLDivElement>(null),visible=useInView(ref,{margin:"200px",once:true}),reduce=useReducedMotion();return <div ref={ref} className="film-frame">{visible&&!reduce?<video src="/ranisa-hero-video.mp4" autoPlay muted loop playsInline preload="none" poster="/media/boutique-800.webp" aria-label="A glimpse inside Ranisa Boutique"/>:<img src="/media/boutique-800.webp" alt="The Ranisa Boutique entrance" loading="lazy" width="800" height="1000"/>}</div>}
+export function FabricDetail(){const ref=useRef<HTMLElement>(null),reduce=useReducedMotion();const {scrollYProgress}=useScroll({target:ref,offset:["start end","end start"]});const y=useTransform(scrollYProgress,[0,1],[-30,30]);return <section className="fabric-detail" ref={ref}><div className="fabric-detail-image"><motion.img src="/media/signature.webp" alt="Campaign study of delicate gold embroidery on burgundy fabric" loading="lazy" width="1024" height="1536" style={{y:reduce?0:y}}/></div><div className="fabric-detail-copy"><p className="eyebrow">03 / THE BEAUTY IN EVERY DETAIL</p><h2>Look a little<br/><i>closer.</i></h2><p>A glimmer of thread. The fall of a drape. A finishing touch that makes all the difference.</p><MagneticLink href="/custom" className="light-link">Find your inspiration</MagneticLink><span className="detail-caption">A CAMPAIGN STUDY IN TEXTURE</span></div></section>}
