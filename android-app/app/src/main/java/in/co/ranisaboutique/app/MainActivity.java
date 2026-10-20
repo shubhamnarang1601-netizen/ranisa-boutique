@@ -21,12 +21,12 @@ public class MainActivity extends Activity {
  TextView text(String value,int size,int color){TextView v=new TextView(this);v.setText(value);v.setTextSize(size);v.setTextColor(color);v.setPadding(12,12,12,12);return v;}
  Button button(String label,Runnable action){Button b=new Button(this);b.setText(label);b.setTextColor(wine);b.setOnClickListener(v->action.run());return b;}
  void render(){
- root=new LinearLayout(this);root.setOrientation(1);root.setBackgroundColor(Color.WHITE);
+ root=new LinearLayout(this);root.setOrientation(LinearLayout.VERTICAL);root.setBackgroundColor(Color.WHITE);
  root.setPadding(0,0,0,8);setContentView(root);
  root.setOnApplyWindowInsetsListener((v,i)->{root.setPadding(i.getSystemWindowInsetLeft(),i.getSystemWindowInsetTop(),i.getSystemWindowInsetRight(),i.getSystemWindowInsetBottom());return i;});
  TextView title=text("RANISA BOUTIQUE",23,wine);title.setGravity(Gravity.CENTER);root.addView(title);
  TextView note=text("FREE SHIPPING ACROSS INDIA",11,gold);note.setGravity(Gravity.CENTER);root.addView(note);
- ScrollView scroll=new ScrollView(this);body=new LinearLayout(this);body.setOrientation(1);scroll.addView(body);
+ ScrollView scroll=new ScrollView(this);body=new LinearLayout(this);body.setOrientation(LinearLayout.VERTICAL);scroll.addView(body);
  root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
  nav=new LinearLayout(this);
  for(String name:new String[]{"Home","Categories","Wishlist","Bag","Profile"}){
@@ -46,7 +46,7 @@ public class MainActivity extends Activity {
   if(!category.equals("All")&&!category.equals(p.optString("category")))continue;
   if(tab.equals("Wishlist")&&!saved.contains(p.optString("id")))continue;
   if(count%2==0){row=new LinearLayout(this);body.addView(row);}count++;
-  LinearLayout card=new LinearLayout(this);card.setPadding(8,8,8,16);card.setOrientation(1);
+  LinearLayout card=new LinearLayout(this);card.setPadding(8,8,8,16);card.setOrientation(LinearLayout.VERTICAL);
   row.addView(card,new LinearLayout.LayoutParams(0,-2,1));
   ImageView photo=new ImageView(this);photo.setScaleType(ImageView.ScaleType.CENTER_CROP);photo.setBackgroundColor(0xfff4eeee);photo.setContentDescription(p.optString("name"));
   card.addView(photo,new LinearLayout.LayoutParams(-1,(int)(230*getResources().getDisplayMetrics().density)));image(p.optString("imageUrl"),photo);
