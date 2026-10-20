@@ -14,4 +14,5 @@ android {
 }
 dependencies {
  implementation 'com.razorpay:checkout:1.6.40'
+ implementation 'androidx.activity:activity:1.10.1'
 }

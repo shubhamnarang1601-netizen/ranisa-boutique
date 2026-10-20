@@ -17,7 +17,7 @@ import java.io.*;
 import java.net.*;
 import java.text.NumberFormat;
 
-public class MainActivity extends Activity implements PaymentResultWithDataListener {
+public class MainActivity extends androidx.activity.ComponentActivity implements PaymentResultWithDataListener {
  final int WINE=0xff701e39,GOLD=0xff967135,INK=0xff292126,MUTED=0xff756c71,PALE=0xfff8f3f5,LINE=0xffe9e0e4;
  final ExecutorService workers=Executors.newFixedThreadPool(4);
  final android.util.LruCache<String,Bitmap> images=new android.util.LruCache<String,Bitmap>(12*1024*1024){protected int sizeOf(String k,Bitmap b){return b.getByteCount();}};
@@ -29,7 +29,7 @@ public class MainActivity extends Activity implements PaymentResultWithDataListe
  JSONObject product=null,address=new JSONObject(); boolean loading=true,busy=false,admin=false;
  int generation=0;
  @Override public void onCreate(Bundle state){
-  super.onCreate(state);auth=new GoogleAuth(this);vault=new SessionVault(this);
+  super.onCreate(state);getOnBackPressedDispatcher().addCallback(this,new androidx.activity.OnBackPressedCallback(true){@Override public void handleOnBackPressed(){if(screen.equals("Home"))finish();else goBack();}});auth=new GoogleAuth(this);vault=new SessionVault(this);
   favourites=new HashSet<>(getPreferences(0).getStringSet("favourites",Collections.emptySet()));
   loadBag();restorePrivate();Checkout.preload(getApplicationContext());render();loadCatalogue();handleIntent(getIntent());
   if(auth.hasSession())checkAdmin();
@@ -309,7 +309,6 @@ public class MainActivity extends Activity implements PaymentResultWithDataListe
  void handleIntent(Intent intent){if(intent!=null)auth.handle(intent.getData(),this::authResult);}
  @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);handleIntent(intent);}
  void goBack(){if(busy){toast("Please wait…");return;}if(screen.equals("Checkout"))nav("Bag");else if(screen.equals("Custom")&&product!=null)nav("Product");else nav("Home");}
- @Override public void onBackPressed(){if(screen.equals("Home"))super.onBackPressed();else goBack();}
  @Override protected void onDestroy(){workers.shutdown();auth.close();super.onDestroy();}
  static final class NavIcon extends View {
   final int type,color;NavIcon(Context context,int t,int c){super(context);type=t;color=c;setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);}
