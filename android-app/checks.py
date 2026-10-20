@@ -12,9 +12,12 @@ settings = get("/auth/v1/settings")
 assert settings.get("external",{}).get("google") is True, "Google provider is not enabled"
 catalogue = get("/rest/v1/ranisa_products?select=id,available_sizes,gallery_images&limit=1")
 assert isinstance(catalogue,list), "Public catalogue contract failed"
-orders = get("/rest/v1/ranisa_orders?select=id&limit=1")
-assert orders == [], "Anonymous order reads must not return customer records"
-request = urllib.request.Request(base+"/functions/v1/ranisa-app-commerce",data=b'{"action":"create-order"}',headers={"Content-Type":"application/json"},method="POST")
+try:
+    orders = get("/rest/v1/ranisa_orders?select=id&limit=1")
+    assert orders == [], "Anonymous order reads must not return customer records"
+except urllib.error.HTTPError as error:
+    assert error.code in (401, 403), "Unexpected anonymous-order response"
+request = urllib.request.Request(base+"/functions/v1/ranisa-mobile",data=b'{"action":"create-order"}',headers={"Content-Type":"application/json"},method="POST")
 try:
     urllib.request.urlopen(request,timeout=25)
     raise AssertionError("Unauthenticated checkout must be denied")
