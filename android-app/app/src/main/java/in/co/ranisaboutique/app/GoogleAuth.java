@@ -15,10 +15,12 @@ final class GoogleAuth {
  // Publishable client key; authorization is enforced by Supabase RLS.
  static final String KEY="sb_publishable_POe4-O4LRqn7I-4D_Rz8sw_mxuwHFgp";
  static final String CALLBACK="in.co.ranisaboutique.app://auth/callback";
- final Activity activity; final SharedPreferences pending;
+ final Activity activity; final SharedPreferences pending; final SessionVault vault;
  final ExecutorService network=Executors.newSingleThreadExecutor();
- volatile String accessToken="",refreshToken="",email=""; volatile long expiresAt=0;
- GoogleAuth(Activity a){activity=a;pending=a.getSharedPreferences("google-pkce",0);}
+ volatile String accessToken="",refreshToken="",email="",userId=""; volatile long expiresAt=0;
+ GoogleAuth(Activity a){activity=a;pending=a.getSharedPreferences("google-pkce",0);vault=new SessionVault(a);try{String cached=vault.read("session");if(!cached.isEmpty()){JSONObject s=new JSONObject(cached);accessToken=s.optString("access_token");refreshToken=s.optString("refresh_token");email=s.optString("email");userId=s.optString("user_id");expiresAt=s.optLong("expires_at");}}catch(Exception ignored){clear();}}
+ boolean hasSession(){return !refreshToken.isEmpty();}
+
  interface Result { void complete(String message); }
  boolean signedIn(){return !accessToken.isEmpty() && System.currentTimeMillis()<expiresAt;}
  static String base64(byte[] bytes){return Base64.encodeToString(bytes,Base64.URL_SAFE|Base64.NO_WRAP|Base64.NO_PADDING);}
@@ -51,15 +53,16 @@ final class GoogleAuth {
   String token=response.optString("access_token"),refresh=response.optString("refresh_token");
   JSONObject user=response.optJSONObject("user");
   if(token.isEmpty()||refresh.isEmpty()||user==null)throw new IOException("Invalid session");
-  accessToken=token;refreshToken=refresh;email=user.optString("email");
+  accessToken=token;refreshToken=refresh;email=user.optString("email");userId=user.optString("id");
   expiresAt=System.currentTimeMillis()+Math.max(0,response.optLong("expires_in",0)-30)*1000;
+  vault.write("session",new JSONObject().put("access_token",accessToken).put("refresh_token",refreshToken).put("email",email).put("user_id",userId).put("expires_at",expiresAt).toString());
  }
  // Call on a worker thread before protected commerce requests.
  synchronized String validToken()throws Exception{
   if(!signedIn()){
    if(refreshToken.isEmpty())throw new IOException("Sign in required");
    try{accept(post("/auth/v1/token?grant_type=refresh_token",new JSONObject().put("refresh_token",refreshToken),null));}
-   catch(Exception e){clear();throw e;}
+   catch(Exception e){throw new IOException("Please reconnect or sign in again.");}
   }return accessToken;
  }
  JSONObject post(String path,JSONObject body,String token)throws Exception{
@@ -80,6 +83,6 @@ final class GoogleAuth {
   network.execute(()->{try{if(!token.isEmpty())post("/auth/v1/logout?scope=local",new JSONObject(),token);}catch(Exception ignored){}
    activity.runOnUiThread(()->result.complete("Signed out on this device."));});
  }
- void clear(){accessToken="";refreshToken="";email="";expiresAt=0;pending.edit().clear().apply();}
- // Sessions intentionally remain in memory; app process restart requires login.
+ void clear(){accessToken="";refreshToken="";email="";userId="";expiresAt=0;pending.edit().clear().apply();vault.remove("session");}
+ void close(){network.shutdown();}
 }

@@ -1,7 +1,18 @@
 # Ranisa Boutique Android
+Native Android shopping app, with white/wine/gold styling and five bottom tabs.
+Uses the shared product catalogue and website product images; no demo products.
 
-Initial native Android catalogue foundation. White, wine and gold theme; bottom navigation, category filters and persistent wishlist. Uses the public website catalogue. No demo products.
+Implemented: category/search/sort, product gallery, available size selection,
+persistent wishlist and bag, quantities, Google OAuth PKCE, Android Keystore encrypted
+session/address storage, delivery form, Razorpay SDK callbacks, order history,
+payment recovery UI, shipment tracking UI, custom measurements to boutique WhatsApp,
+policies, and administrator-only sizing controls.
 
-Not release ready. Google sign-in, checkout, gallery/size selection and tracking integration remain pending. No APK has been compiled or device-tested.
+Checkout/recovery/live tracking require activation of the reviewed mobile commerce
+service. The existing website backend is unchanged. The APK is not an assertion
+that production payment and shipment operations have been activated or tested.
 
-Build with JDK 17, Android SDK 36 and Gradle 9.6.0: gradle :app:assembleDebug
+Build: JDK 17, Android SDK 36, Gradle 9.6.0.
+gradle :app:assembleDebug :app:lintDebug
+Device checks: gradle :app:assembleDebugAndroidTest, then install both APKs
+and run the SmokeInstrumentation runner.
