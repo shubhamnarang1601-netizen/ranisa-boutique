@@ -255,7 +255,7 @@ public class MainActivity extends androidx.activity.ComponentActivity implements
   for(int i=0;i<orders.length();i++){JSONObject order=orders.optJSONObject(i);LinearLayout card=column();card.setBackground(bg(PALE,12));body.addView(card);
    card.addView(label(order.optString("id"),12,MUTED));String status=order.optBoolean("paid")?"Paid · "+(order.optString("sync_state").equals("synced")?"Shipment created":"Preparing your order"):"Payment pending";
    card.addView(label(status,17,WINE));card.addView(label(money(order.optDouble("amount")/100),20,INK));card.addView(label(order.optString("created_at").replace("T"," ").substring(0,Math.min(16,order.optString("created_at").length())),12,MUTED));
-   JSONArray items=order.optJSONArray("items");if(items!=null)for(int j=0;j<items.length();j++){JSONObject item=items.optJSONObject(j);card.addView(label(item.optString("name")+" · "+item.optString("size")+" × "+item.optInt("quantity"),14,INK));}
+   JSONArray items=order.optJSONArray("items");if(items!=null)for(int j=0;j<items.length();j++){JSONObject item=items.optJSONObject(j);card.addView(label(item.optString("name")+" · "+item.optString("size")+" × "+item.optInt("quantity",item.optInt("qty",1)),14,INK));}
    if(order.optBoolean("test_mode"))card.addView(label("TEST ORDER · no live shipment",12,GOLD));
    if(!order.optBoolean("paid"))card.addView(button("Check payment status",false,()->recover(order.optString("id"))));
    else card.addView(button("Track order",true,()->track(order.optString("id"))));
@@ -274,7 +274,8 @@ public class MainActivity extends androidx.activity.ComponentActivity implements
   body.addView(heading("Boutique policies"));body.addView(label("No Return, No Exchange",20,WINE));body.addView(label("Please check product details and confirm your size before placing an order. Contact Ranisa Boutique for product or order assistance.",15,INK));
   body.addView(label("Payments & delivery",20,WINE));body.addView(label("Online payment through Razorpay. Free shipping across India, subject to courier serviceability. Custom orders are confirmed directly with the boutique.",15,INK));
   body.addView(label("Privacy",20,WINE));body.addView(label("Google sign-in provides your account identity. Delivery details are used to fulfil your order and are shared with the payment and delivery providers where required. Your account session and saved address are encrypted on this device. Custom enquiry details open in WhatsApp only when you choose to continue.",15,INK));
-  body.addView(button("Website privacy & terms",false,()->openUrl(ShopApi.SITE+"/policies")));
+  body.addView(button("Website privacy & terms",false,()->openUrl(ShopApi.SITE+"/terms-and-conditions")));
+  body.addView(button("Website privacy policy",false,()->openUrl(ShopApi.SITE+"/privacy-policy")));
   body.addView(button("Account / data deletion request",false,()->whatsapp("Hello Ranisa Boutique, I would like to request deletion of my account and personal data. My account email is "+auth.email)));
  }
  void adminScreen(){body.addView(heading("Available product sizes"));if(!admin){body.addView(label("Administrator access required.",15,MUTED));return;}
