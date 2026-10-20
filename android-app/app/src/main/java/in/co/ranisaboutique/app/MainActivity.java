@@ -13,10 +13,11 @@ import java.util.concurrent.*;
 public class MainActivity extends Activity {
  final int wine=Color.rgb(112,30,57),gold=Color.rgb(163,126,59);
  final ExecutorService workers=Executors.newFixedThreadPool(3);
+ GoogleAuth auth; String authMessage="";
  LinearLayout root,body,nav; final ArrayList<JSONObject> products=new ArrayList<>();
  Set<String> saved=new HashSet<>(); String tab="Home",category="All"; boolean loading=true; String error="";
  final String site="https://ranisaboutique.co.in";
- @Override public void onCreate(Bundle b){super.onCreate(b); saved=new HashSet<>(getPreferences(0).getStringSet("wishlist",Collections.emptySet())); render(); load();}
+ @Override public void onCreate(Bundle b){super.onCreate(b); auth=new GoogleAuth(this); saved=new HashSet<>(getPreferences(0).getStringSet("wishlist",Collections.emptySet())); render(); load(); handleAuthIntent(getIntent());}
  TextView text(String value,int size,int color){TextView v=new TextView(this);v.setText(value);v.setTextSize(size);v.setTextColor(color);v.setPadding(12,12,12,12);return v;}
  Button button(String label,Runnable action){Button b=new Button(this);b.setText(label);b.setTextColor(wine);b.setOnClickListener(v->action.run());return b;}
  void render(){
@@ -33,7 +34,7 @@ public class MainActivity extends Activity {
   item.setOnClickListener(v->{tab=name;render();});nav.addView(item,new LinearLayout.LayoutParams(0,-2,1));
  }root.addView(nav);
  if(tab.equals("Bag")){body.addView(text("Your bag",25,wine));body.addView(text("Checkout will be available after Google sign-in and payment integration are verified.",16,Color.DKGRAY));return;}
- if(tab.equals("Profile")){body.addView(text("Your Ranisa account",25,wine));body.addView(text("Google sign-in setup is pending. Your account and orders will appear here once connected.",16,Color.DKGRAY));return;}
+ if(tab.equals("Profile")){body.addView(text("Your Ranisa account",25,wine));if(!authMessage.isEmpty())body.addView(text(authMessage,16,wine));if(!auth.email.isEmpty()){body.addView(text(auth.email,16,Color.DKGRAY));body.addView(button("Sign out",()->auth.signOut(this::authResult)));}else{body.addView(text("Sign in to manage your account and place orders.",16,Color.DKGRAY));body.addView(button("Continue with Google",()->auth.start(this::authResult)));}return;}
  LinearLayout cats=new LinearLayout(this);
  HorizontalScrollView h=new HorizontalScrollView(this);h.addView(cats);body.addView(h);
  for(String c:new String[]{"All","suit","lehenga","material"})cats.addView(button(c,()->{category=c;render();}));
@@ -76,5 +77,8 @@ public class MainActivity extends Activity {
  Bitmap bitmap;try(InputStream in=c.getInputStream()){BitmapFactory.Options o=new BitmapFactory.Options();o.inSampleSize=2;bitmap=BitmapFactory.decodeStream(in,null,o);}
  if(bitmap!=null)runOnUiThread(()->view.setImageBitmap(bitmap));
  }catch(Exception ignored){}finally{if(c!=null)c.disconnect();}});}
+ void authResult(String message){authMessage=message;tab="Profile";render();}
+ void handleAuthIntent(android.content.Intent intent){if(intent!=null)auth.handle(intent.getData(),this::authResult);}
+ @Override protected void onNewIntent(android.content.Intent intent){super.onNewIntent(intent);setIntent(intent);handleAuthIntent(intent);}
  @Override public void onDestroy(){workers.shutdownNow();super.onDestroy();}
 }
